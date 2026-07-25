@@ -9,16 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.110.8",
+    "@supabase/supabase-js": "^2.45.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^8.1.5"
-  },
-  "description": "## التشغيل محليًا",
-  "main": "vite.config.js",
-  "author": "",
-  "license": "ISC"
+    "vite": "^5.4.1"
+  }
 }
