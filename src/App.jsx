@@ -1,29 +1,37 @@
-import { useState } from 'react';
-import Header from './components/layout/Header.jsx';
-import Tabs from './components/layout/Tabs.jsx';
-import Modal from './components/layout/Modal.jsx';
-import TireList from './components/tires/TireList.jsx';
-import TireForm from './components/tires/TireForm.jsx';
-import BatteryList from './components/batteries/BatteryList.jsx';
-import BatteryForm from './components/batteries/BatteryForm.jsx';
-import InstallmentList from './components/installments/InstallmentList.jsx';
-import InstallmentForm from './components/installments/InstallmentForm.jsx';
-import InstallmentDateForm from './components/installments/InstallmentDateForm.jsx';
-import { useTires } from './hooks/useTires.js';
-import { useBatteries } from './hooks/useBatteries.js';
-import { useInstallments } from './hooks/useInstallments.js';
-import { useToast } from './context/ToastContext.jsx';
+import { useState } from "react";
+import HardwareList from "./components/hardware/HardwareList.jsx";
+import HardwareForm from "./components/hardware/HardwareForm.jsx";
+import { useHardware } from "./hooks/useHardware.js";
+import Header from "./components/layout/Header.jsx";
+import Tabs from "./components/layout/Tabs.jsx";
+import Modal from "./components/layout/Modal.jsx";
+import TireList from "./components/tires/TireList.jsx";
+import TireForm from "./components/tires/TireForm.jsx";
+import BatteryList from "./components/batteries/BatteryList.jsx";
+import BatteryForm from "./components/batteries/BatteryForm.jsx";
+import InstallmentList from "./components/installments/InstallmentList.jsx";
+import InstallmentForm from "./components/installments/InstallmentForm.jsx";
+import InstallmentDateForm from "./components/installments/InstallmentDateForm.jsx";
+import { useTires } from "./hooks/useTires.js";
+import { useBatteries } from "./hooks/useBatteries.js";
+import { useInstallments } from "./hooks/useInstallments.js";
+import { useToast } from "./context/ToastContext.jsx";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('tires');
+  const [activeTab, setActiveTab] = useState("tires");
   const [modal, setModal] = useState(null); // { type, payload }
   const showToast = useToast();
 
   const tiresApi = useTires();
   const batteriesApi = useBatteries();
   const installmentsApi = useInstallments();
+  const hardwareApi = useHardware();
 
-  const isLoading = tiresApi.loading || batteriesApi.loading || installmentsApi.loading;
+  const isLoading =
+    tiresApi.loading ||
+    batteriesApi.loading ||
+    installmentsApi.loading ||
+    hardwareApi.loading;
   const closeModal = () => setModal(null);
 
   const handleExport = () => {
@@ -31,15 +39,19 @@ export default function App() {
       tires: tiresApi.tires,
       batteries: batteriesApi.batteries,
       installments: installmentsApi.installments,
+      hardware: hardwareApi.hardware,
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'نسخة_احتياطية_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download =
+      "نسخة_احتياطية_" + new Date().toISOString().slice(0, 10) + ".json";
     a.click();
     URL.revokeObjectURL(url);
-    showToast('✅ اتحمّل الملف');
+    showToast("✅ اتحمّل الملف");
   };
 
   const handleImportFile = (file) => {
@@ -48,14 +60,17 @@ export default function App() {
       try {
         const imported = JSON.parse(e.target.result);
         if (!imported.tires || !imported.batteries || !imported.installments) {
-          throw new Error('bad file');
+          throw new Error("bad file");
         }
         tiresApi.setTires(imported.tires);
         batteriesApi.setBatteries(imported.batteries);
         installmentsApi.setInstallments(imported.installments);
-        showToast('✅ اتحمّلت البيانات بنجاح');
+        if (imported.hardware) {
+          hardwareApi.setHardware(imported.hardware);
+        }
+        showToast("✅ اتحمّلت البيانات بنجاح");
       } catch {
-        showToast('⚠️ الملف مش صالح');
+        showToast("⚠️ الملف مش صالح");
       }
     };
     reader.readAsText(file);
@@ -71,29 +86,39 @@ export default function App() {
           <div className="empty">جاري التحميل...</div>
         ) : (
           <>
-            {activeTab === 'tires' && (
+            {activeTab === "tires" && (
               <TireList
                 tires={tiresApi.tires}
                 onAdjust={tiresApi.adjustQty}
                 onDelete={tiresApi.deleteTire}
-                onOpenAdd={() => setModal({ type: 'tireForm' })}
+                onOpenAdd={() => setModal({ type: "tireForm" })}
               />
             )}
-            {activeTab === 'batteries' && (
+            {activeTab === "batteries" && (
               <BatteryList
                 batteries={batteriesApi.batteries}
                 onAdjust={batteriesApi.adjustQty}
                 onDelete={batteriesApi.deleteBattery}
-                onOpenAdd={() => setModal({ type: 'batteryForm' })}
+                onOpenAdd={() => setModal({ type: "batteryForm" })}
               />
             )}
-            {activeTab === 'installments' && (
+            {activeTab === "hardware" && (
+              <HardwareList
+                hardware={hardwareApi.hardware}
+                onAdjust={hardwareApi.adjustQty}
+                onDelete={hardwareApi.deleteHardware}
+                onOpenAdd={() => setModal({ type: "hardwareForm" })}
+              />
+            )}
+            {activeTab === "installments" && (
               <InstallmentList
                 installments={installmentsApi.installments}
                 onLogPayment={installmentsApi.logPayment}
                 onUndoPayment={installmentsApi.undoPayment}
-                onOpenDateForm={(id) => setModal({ type: 'installmentDateForm', payload: id })}
-                onOpenAdd={() => setModal({ type: 'installmentForm' })}
+                onOpenDateForm={(id) =>
+                  setModal({ type: "installmentDateForm", payload: id })
+                }
+                onOpenAdd={() => setModal({ type: "installmentForm" })}
               />
             )}
           </>
@@ -101,17 +126,29 @@ export default function App() {
       </main>
 
       <Modal open={!!modal} onClose={closeModal}>
-        {modal?.type === 'tireForm' && <TireForm onSave={tiresApi.addTire} onClose={closeModal} />}
-        {modal?.type === 'batteryForm' && (
+        {modal?.type === "tireForm" && (
+          <TireForm onSave={tiresApi.addTire} onClose={closeModal} />
+        )}
+        {modal?.type === "batteryForm" && (
           <BatteryForm onSave={batteriesApi.addBattery} onClose={closeModal} />
         )}
-        {modal?.type === 'installmentForm' && (
-          <InstallmentForm onSave={installmentsApi.addInstallment} onClose={closeModal} />
+        {modal?.type === "hardwareForm" && (
+          <HardwareForm onSave={hardwareApi.addHardware} onClose={closeModal} />
         )}
-        {modal?.type === 'installmentDateForm' && (
+        {modal?.type === "installmentForm" && (
+          <InstallmentForm
+            onSave={installmentsApi.addInstallment}
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "installmentDateForm" && (
           <InstallmentDateForm
-            installment={installmentsApi.installments.find((c) => c.id === modal.payload)}
-            onSave={(date) => installmentsApi.setFirstInstallmentDate(modal.payload, date)}
+            installment={installmentsApi.installments.find(
+              (c) => c.id === modal.payload,
+            )}
+            onSave={(date) =>
+              installmentsApi.setFirstInstallmentDate(modal.payload, date)
+            }
             onClose={closeModal}
           />
         )}
