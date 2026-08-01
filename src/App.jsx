@@ -2,6 +2,12 @@ import { useState } from "react";
 import HardwareList from "./components/hardware/HardwareList.jsx";
 import HardwareForm from "./components/hardware/HardwareForm.jsx";
 import { useHardware } from "./hooks/useHardware.js";
+import SalesList from "./components/sales/SalesList.jsx";
+import SalesForm from "./components/sales/SalesForm.jsx";
+import { useSales } from "./hooks/useSales.js";
+import ReceiptList from "./components/receipts/ReceiptList.jsx";
+import ReceiptForm from "./components/receipts/ReceiptForm.jsx";
+import { useReceipts } from "./hooks/useReceipts.js";
 import Header from "./components/layout/Header.jsx";
 import Tabs from "./components/layout/Tabs.jsx";
 import Modal from "./components/layout/Modal.jsx";
@@ -16,16 +22,22 @@ import { useTires } from "./hooks/useTires.js";
 import { useBatteries } from "./hooks/useBatteries.js";
 import { useInstallments } from "./hooks/useInstallments.js";
 import { useToast } from "./context/ToastContext.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
+import { isCloudConfigured } from "./lib/supabaseClient.js";
+import LoginForm from "./components/auth/LoginForm.jsx";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("tires");
   const [modal, setModal] = useState(null); // { type, payload }
   const showToast = useToast();
+  const { user, loading: authLoading, signOut } = useAuth();
 
   const tiresApi = useTires();
   const batteriesApi = useBatteries();
   const installmentsApi = useInstallments();
   const hardwareApi = useHardware();
+  const salesApi = useSales({ tiresApi, batteriesApi, hardwareApi });
+  const receiptsApi = useReceipts();
 
   const isLoading =
     tiresApi.loading ||
@@ -33,6 +45,14 @@ export default function App() {
     installmentsApi.loading ||
     hardwareApi.loading;
   const closeModal = () => setModal(null);
+
+  // لو Supabase متظبط وفيه auth مفعّل، لازم تسجّل دخول قبل ما تشوف أي حاجة
+  if (isCloudConfigured && authLoading) {
+    return <div className="empty">...جاري التحقق من الدخول</div>;
+  }
+  if (isCloudConfigured && !user) {
+    return <LoginForm />;
+  }
 
   const handleExport = () => {
     const payload = {
@@ -78,7 +98,12 @@ export default function App() {
 
   return (
     <>
-      <Header onExport={handleExport} onImportFile={handleImportFile} />
+      <Header
+        onExport={handleExport}
+        onImportFile={handleImportFile}
+        onLogout={isCloudConfigured ? signOut : null}
+        userEmail={user?.email}
+      />
       <Tabs activeTab={activeTab} onChange={setActiveTab} />
 
       <main>
@@ -110,6 +135,20 @@ export default function App() {
                 onOpenAdd={() => setModal({ type: "hardwareForm" })}
               />
             )}
+            {activeTab === "sales" && (
+              <SalesList
+                sales={salesApi.sales}
+                onDelete={salesApi.deleteSale}
+                onOpenAdd={() => setModal({ type: "salesForm" })}
+              />
+            )}
+            {activeTab === "receipts" && (
+              <ReceiptList
+                receipts={receiptsApi.receipts}
+                onDelete={receiptsApi.deleteReceipt}
+                onOpenAdd={() => setModal({ type: "receiptForm" })}
+              />
+            )}
             {activeTab === "installments" && (
               <InstallmentList
                 installments={installmentsApi.installments}
@@ -134,6 +173,18 @@ export default function App() {
         )}
         {modal?.type === "hardwareForm" && (
           <HardwareForm onSave={hardwareApi.addHardware} onClose={closeModal} />
+        )}
+        {modal?.type === "salesForm" && (
+          <SalesForm
+            tires={tiresApi.tires}
+            batteries={batteriesApi.batteries}
+            hardware={hardwareApi.hardware}
+            onSave={salesApi.addSale}
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "receiptForm" && (
+          <ReceiptForm onSave={receiptsApi.addReceipt} onClose={closeModal} />
         )}
         {modal?.type === "installmentForm" && (
           <InstallmentForm
