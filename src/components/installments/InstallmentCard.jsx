@@ -7,6 +7,7 @@ export default function InstallmentCard({ c, onLogPayment, onUndoPayment, onOpen
   const dateLabel = c.firstInstallmentDate
     ? new Date(c.firstInstallmentDate).toLocaleDateString('ar-EG')
     : 'لسه محدّدش';
+  const descLines = (c.desc || '').split('\n').map((l) => l.trim()).filter(Boolean);
 
   return (
     <div className="inst-card">
@@ -14,7 +15,13 @@ export default function InstallmentCard({ c, onLogPayment, onUndoPayment, onOpen
         <div>
           <div className="inst-name">{c.name}</div>
           {c.phone && <div className="inst-phone">{c.phone}</div>}
-          {c.desc && <div className="inst-desc">🧾 {c.desc}</div>}
+          {descLines.length > 0 && (
+            <div className="inst-desc">
+              {descLines.map((line, i) => (
+                <div key={i} className="inst-desc-line">🧾 {line}</div>
+              ))}
+            </div>
+          )}
         </div>
         <span className={`pill ${cls}`}>
           {status === 'متأخر' ? '🔴' : status === 'مسدد' ? '✅' : '🟡'} {status}
