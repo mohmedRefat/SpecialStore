@@ -1,12 +1,13 @@
 import { useState } from 'react';
 
-export default function ReceiptForm({ onSave, onClose }) {
+export default function ReceiptForm({ accounts = [], defaultAccountId = '', defaultName = '', onSave, onClose }) {
   const [form, setForm] = useState({
-    name: '',
+    name: defaultName,
     phone: '',
     amount: '',
     desc: '',
     date: new Date().toISOString().slice(0, 10),
+    accountId: defaultAccountId,
   });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -27,6 +28,17 @@ export default function ReceiptForm({ onSave, onClose }) {
           <input type="number" value={form.amount} onChange={set('amount')} />
         </div>
       </div>
+      {!defaultAccountId && accounts.length > 0 && (
+        <div className="field">
+          <label>ربط بحساب عميل (اختياري)</label>
+          <select value={form.accountId} onChange={set('accountId')}>
+            <option value="">بدون ربط</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="field">
         <label>البيان (سبب الاستلام)</label>
         <input value={form.desc} onChange={set('desc')} placeholder="مثلاً: سلفة، دفعة، تسوية حساب..." />

@@ -9,6 +9,7 @@ function mapFromDb(r) {
     amount: r.amount,
     desc: r.description,
     receivedAt: r.received_at,
+    accountId: r.account_id,
   };
 }
 
@@ -20,6 +21,7 @@ function mapToDb(r) {
     amount: r.amount,
     description: r.desc,
     received_at: r.receivedAt,
+    account_id: r.accountId || null,
   };
 }
 
@@ -50,6 +52,7 @@ export function useReceipts() {
       amount,
       desc: form.desc || '',
       receivedAt: form.date || new Date().toISOString().slice(0, 10),
+      accountId: form.accountId || null,
     };
     const { error } = await insertItem(newReceipt);
     if (error) {
