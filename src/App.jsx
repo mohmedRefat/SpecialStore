@@ -28,9 +28,13 @@ import BatteryForm from "./components/batteries/BatteryForm.jsx";
 import InstallmentList from "./components/installments/InstallmentList.jsx";
 import InstallmentForm from "./components/installments/InstallmentForm.jsx";
 import InstallmentDateForm from "./components/installments/InstallmentDateForm.jsx";
+import HeavyInstallmentList from "./components/heavyInstallments/HeavyInstallmentList.jsx";
+import HeavyInstallmentForm from "./components/heavyInstallments/HeavyInstallmentForm.jsx";
+import HeavyInstallmentDateForm from "./components/heavyInstallments/HeavyInstallmentDateForm.jsx";
 import { useTires } from "./hooks/useTires.js";
 import { useBatteries } from "./hooks/useBatteries.js";
 import { useInstallments } from "./hooks/useInstallments.js";
+import { useHeavyInstallments } from "./hooks/useHeavyInstallments.js";
 import { useToast } from "./context/ToastContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { isCloudConfigured } from "./lib/supabaseClient.js";
@@ -45,6 +49,7 @@ export default function App() {
   const tiresApi = useTires();
   const batteriesApi = useBatteries();
   const installmentsApi = useInstallments();
+  const heavyInstallmentsApi = useHeavyInstallments();
   const hardwareApi = useHardware();
   const loadersApi = useLoaders();
   const salesApi = useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, currentUserEmail: user?.email });
@@ -56,6 +61,7 @@ export default function App() {
     tiresApi.loading ||
     batteriesApi.loading ||
     installmentsApi.loading ||
+    heavyInstallmentsApi.loading ||
     hardwareApi.loading ||
     loadersApi.loading;
   const closeModal = () => setModal(null);
@@ -73,6 +79,7 @@ export default function App() {
       tires: tiresApi.tires,
       batteries: batteriesApi.batteries,
       installments: installmentsApi.installments,
+      heavyInstallments: heavyInstallmentsApi.heavyInstallments,
       hardware: hardwareApi.hardware,
       loaders: loadersApi.loaders,
     };
@@ -100,6 +107,9 @@ export default function App() {
         tiresApi.setTires(imported.tires);
         batteriesApi.setBatteries(imported.batteries);
         installmentsApi.setInstallments(imported.installments);
+        if (imported.heavyInstallments) {
+          heavyInstallmentsApi.setHeavyInstallments(imported.heavyInstallments);
+        }
         if (imported.hardware) {
           hardwareApi.setHardware(imported.hardware);
         }
@@ -204,6 +214,17 @@ export default function App() {
                 onOpenAdd={() => setModal({ type: "installmentForm" })}
               />
             )}
+            {activeTab === "heavyInstallments" && (
+              <HeavyInstallmentList
+                heavyInstallments={heavyInstallmentsApi.heavyInstallments}
+                onLogPayment={heavyInstallmentsApi.logPayment}
+                onUndoPayment={heavyInstallmentsApi.undoPayment}
+                onOpenDateForm={(id) =>
+                  setModal({ type: "heavyInstallmentDateForm", payload: id })
+                }
+                onOpenAdd={() => setModal({ type: "heavyInstallmentForm" })}
+              />
+            )}
           </>
         )}
       </main>
@@ -265,6 +286,23 @@ export default function App() {
             )}
             onSave={(date) =>
               installmentsApi.setFirstInstallmentDate(modal.payload, date)
+            }
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "heavyInstallmentForm" && (
+          <HeavyInstallmentForm
+            onSave={heavyInstallmentsApi.addHeavyInstallment}
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "heavyInstallmentDateForm" && (
+          <HeavyInstallmentDateForm
+            installment={heavyInstallmentsApi.heavyInstallments.find(
+              (c) => c.id === modal.payload,
+            )}
+            onSave={(date) =>
+              heavyInstallmentsApi.setFirstInstallmentDate(modal.payload, date)
             }
             onClose={closeModal}
           />

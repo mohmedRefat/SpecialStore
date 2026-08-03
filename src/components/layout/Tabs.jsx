@@ -7,7 +7,8 @@ const TABS = [
   { id: 'receipts', label: '💵 استلام مبلغ' },
   { id: 'accounts', label: '📒 الحسابات' },
   { id: 'imports', label: '📥 الاستيراد' },
-  { id: 'installments', label: '💳 التقسيط' },
+  { id: 'installments', label: '💳 تقسيط نص نقل ' },
+  { id: 'heavyInstallments', label: '🚛 تقسيط النقل التقيل' },
 ];
 
 export default function Tabs({ activeTab, onChange }) {
