@@ -13,14 +13,18 @@ export default function SalesList({ sales, onOpenAdd, onDelete }) {
   );
   const dayTotal = filtered.reduce((s, x) => s + (Number(x.total) || 0), 0);
   const dayQty = filtered.reduce((s, x) => s + (Number(x.qty) || 0), 0);
+  const dayRemaining = filtered.reduce((s, x) => {
+    const paid = x.paidAmount === null || x.paidAmount === undefined ? x.total : Number(x.paidAmount);
+    return s + Math.max(0, Number(x.total) - paid);
+  }, 0);
 
   return (
     <>
       <StatStrip
         stats={[
           { value: filtered.length, label: 'عدد العمليات' },
-          { value: dayQty, label: 'إجمالي القطع', variant: 'gold' },
           { value: fmt(dayTotal), label: 'إجمالي المبيعات', variant: 'success' },
+          { value: fmt(dayRemaining), label: 'باقي على العملاء', variant: 'warn' },
         ]}
       />
       <div className="search-wrap">

@@ -2,12 +2,22 @@ import { useState } from "react";
 import HardwareList from "./components/hardware/HardwareList.jsx";
 import HardwareForm from "./components/hardware/HardwareForm.jsx";
 import { useHardware } from "./hooks/useHardware.js";
+import LoaderList from "./components/loaders/LoaderList.jsx";
+import LoaderForm from "./components/loaders/LoaderForm.jsx";
+import { useLoaders } from "./hooks/useLoaders.js";
 import SalesList from "./components/sales/SalesList.jsx";
 import SalesForm from "./components/sales/SalesForm.jsx";
 import { useSales } from "./hooks/useSales.js";
 import ReceiptList from "./components/receipts/ReceiptList.jsx";
 import ReceiptForm from "./components/receipts/ReceiptForm.jsx";
 import { useReceipts } from "./hooks/useReceipts.js";
+import AccountsPage from "./components/accounts/AccountsPage.jsx";
+import AccountForm from "./components/accounts/AccountForm.jsx";
+import AccountItemForm from "./components/accounts/AccountItemForm.jsx";
+import { useAccounts } from "./hooks/useAccounts.js";
+import ImportList from "./components/imports/ImportList.jsx";
+import ImportForm from "./components/imports/ImportForm.jsx";
+import { useImports } from "./hooks/useImports.js";
 import Header from "./components/layout/Header.jsx";
 import Tabs from "./components/layout/Tabs.jsx";
 import Modal from "./components/layout/Modal.jsx";
@@ -36,14 +46,18 @@ export default function App() {
   const batteriesApi = useBatteries();
   const installmentsApi = useInstallments();
   const hardwareApi = useHardware();
-  const salesApi = useSales({ tiresApi, batteriesApi, hardwareApi });
+  const loadersApi = useLoaders();
+  const salesApi = useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, currentUserEmail: user?.email });
   const receiptsApi = useReceipts();
+  const accountsApi = useAccounts();
+  const importsApi = useImports();
 
   const isLoading =
     tiresApi.loading ||
     batteriesApi.loading ||
     installmentsApi.loading ||
-    hardwareApi.loading;
+    hardwareApi.loading ||
+    loadersApi.loading;
   const closeModal = () => setModal(null);
 
   // لو Supabase متظبط وفيه auth مفعّل، لازم تسجّل دخول قبل ما تشوف أي حاجة
@@ -60,6 +74,7 @@ export default function App() {
       batteries: batteriesApi.batteries,
       installments: installmentsApi.installments,
       hardware: hardwareApi.hardware,
+      loaders: loadersApi.loaders,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
@@ -135,6 +150,14 @@ export default function App() {
                 onOpenAdd={() => setModal({ type: "hardwareForm" })}
               />
             )}
+            {activeTab === "loaders" && (
+              <LoaderList
+                loaders={loadersApi.loaders}
+                onAdjust={loadersApi.adjustQty}
+                onDelete={loadersApi.deleteLoader}
+                onOpenAdd={() => setModal({ type: "loaderForm" })}
+              />
+            )}
             {activeTab === "sales" && (
               <SalesList
                 sales={salesApi.sales}
@@ -147,6 +170,27 @@ export default function App() {
                 receipts={receiptsApi.receipts}
                 onDelete={receiptsApi.deleteReceipt}
                 onOpenAdd={() => setModal({ type: "receiptForm" })}
+              />
+            )}
+            {activeTab === "accounts" && (
+              <AccountsPage
+                accounts={accountsApi.accounts}
+                itemsFor={accountsApi.itemsFor}
+                receipts={receiptsApi.receipts}
+                onOpenAddAccount={() => setModal({ type: "accountForm" })}
+                onOpenAddItem={(accountId) => setModal({ type: "accountItemForm", payload: accountId })}
+                onOpenReceipt={(accountId, name) =>
+                  setModal({ type: "receiptForm", payload: { accountId, name } })
+                }
+                onDeleteAccount={accountsApi.deleteAccount}
+                onDeleteItem={accountsApi.deleteAccountItem}
+              />
+            )}
+            {activeTab === "imports" && (
+              <ImportList
+                imports={importsApi.imports}
+                onDelete={importsApi.deleteImport}
+                onOpenAdd={() => setModal({ type: "importForm" })}
               />
             )}
             {activeTab === "installments" && (
@@ -174,17 +218,39 @@ export default function App() {
         {modal?.type === "hardwareForm" && (
           <HardwareForm onSave={hardwareApi.addHardware} onClose={closeModal} />
         )}
+        {modal?.type === "loaderForm" && (
+          <LoaderForm onSave={loadersApi.addLoader} onClose={closeModal} />
+        )}
         {modal?.type === "salesForm" && (
           <SalesForm
             tires={tiresApi.tires}
             batteries={batteriesApi.batteries}
             hardware={hardwareApi.hardware}
+            loaders={loadersApi.loaders}
             onSave={salesApi.addSale}
             onClose={closeModal}
           />
         )}
         {modal?.type === "receiptForm" && (
-          <ReceiptForm onSave={receiptsApi.addReceipt} onClose={closeModal} />
+          <ReceiptForm
+            accounts={accountsApi.accounts}
+            defaultAccountId={modal.payload?.accountId || ""}
+            defaultName={modal.payload?.name || ""}
+            onSave={receiptsApi.addReceipt}
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "accountForm" && (
+          <AccountForm onSave={accountsApi.addAccount} onClose={closeModal} />
+        )}
+        {modal?.type === "accountItemForm" && (
+          <AccountItemForm
+            onSave={(form) => accountsApi.addAccountItem(modal.payload, form)}
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "importForm" && (
+          <ImportForm onSave={importsApi.addImport} onClose={closeModal} />
         )}
         {modal?.type === "installmentForm" && (
           <InstallmentForm

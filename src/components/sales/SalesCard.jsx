@@ -1,26 +1,32 @@
 import { fmt } from '../../utils/helpers.js';
 
-const CATEGORY_LABELS = { tire: 'كاوتش', battery: 'بطارية', hardware: 'حديد' };
+const CATEGORY_LABELS = { tire: 'كاوتش', battery: 'بطارية', hardware: 'حديد', loader: 'لودر/زراعي' };
+const PAYMENT_LABELS = { cash: 'نقدي', credit: 'آجل' };
 
 export default function SalesCard({ sale, onDelete }) {
+  const paid = sale.paidAmount === null || sale.paidAmount === undefined ? sale.total : Number(sale.paidAmount);
+  const remaining = Math.max(0, Number(sale.total) - paid);
+
   return (
     <div className="item-card">
       <div className="item-top">
         <div>
-          <div className="item-name">{sale.itemName}</div>
+          <div className="item-name">{sale.customerName || 'عميل بدون اسم'}</div>
           <div className="item-sub">
-            {CATEGORY_LABELS[sale.itemType] || sale.itemType} · {new Date(sale.soldAt).toLocaleDateString('ar-EG')}
+            {sale.customerPhone || '—'} · {new Date(sale.soldAt).toLocaleDateString('ar-EG')}
           </div>
-          {(sale.customerName || sale.customerPhone) && (
-            <div className="item-sub" style={{ marginTop: 2 }}>
-              {sale.customerName || 'بدون اسم'}
-              {sale.customerPhone ? ` · ${sale.customerPhone}` : ''}
-            </div>
-          )}
+          <div className="item-sub" style={{ marginTop: 2 }}>
+            {sale.itemName} · {CATEGORY_LABELS[sale.itemType] || sale.itemType}
+          </div>
         </div>
-        <span className="pill success">{fmt(sale.total)} ج</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+          <span className={`pill ${sale.paymentMethod === 'credit' ? 'gold' : 'success'}`}>
+            {PAYMENT_LABELS[sale.paymentMethod] || sale.paymentMethod}
+          </span>
+          {remaining > 0 && <span className="pill danger">باقي {fmt(remaining)}</span>}
+        </div>
       </div>
-      <div className="item-grid">
+      <div className="item-grid lg">
         <div className="item-metric cost">
           <div className="k">الكمية</div>
           <div className="v num">{sale.qty}</div>

@@ -4,15 +4,21 @@ import { useToast } from '../context/ToastContext.jsx';
 function mapFromDb(r) {
   return {
     id: r.id,
+    invoiceNo: r.invoice_no,
     itemType: r.item_type,
     itemId: r.item_id,
     itemName: r.item_name,
     qty: r.qty,
     price: r.price,
     total: r.total,
+    paidAmount: r.paid_amount,
     soldAt: r.sold_at,
     customerName: r.customer_name,
     customerPhone: r.customer_phone,
+    paymentMethod: r.payment_method,
+    soldBy: r.sold_by,
+    notes: r.notes,
+    createdAt: r.created_at,
   };
 }
 
@@ -25,18 +31,20 @@ function mapToDb(s) {
     qty: s.qty,
     price: s.price,
     total: s.total,
+    paid_amount: s.paidAmount,
     sold_at: s.soldAt,
     customer_name: s.customerName || null,
     customer_phone: s.customerPhone || null,
+    payment_method: s.paymentMethod || 'cash',
+    sold_by: s.soldBy || null,
+    notes: s.notes || null,
   };
 }
 
 /**
- * useSales needs the other stock hooks so it can decrement quantity
- * automatically when a sale is logged.
- * usage: useSales({ tiresApi, batteriesApi, hardwareApi })
+ * usage: useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, currentUserEmail })
  */
-export function useSales({ tiresApi, batteriesApi, hardwareApi }) {
+export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, currentUserEmail }) {
   const showToast = useToast();
   const {
     items: sales,
@@ -46,13 +54,21 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi }) {
     removeItem,
   } = useSupabaseTable('sales', [], { mapFromDb, mapToDb });
 
-  const getCategoryApi = (type) => ({ tire: tiresApi, battery: batteriesApi, hardware: hardwareApi }[type]);
+  const getCategoryApi = (type) =>
+    ({ tire: tiresApi, battery: batteriesApi, hardware: hardwareApi, loader: loadersApi }[type]);
   const getCategoryItems = (type) =>
-    ({ tire: tiresApi.tires, battery: batteriesApi.batteries, hardware: hardwareApi.hardware }[type]) || [];
+    ({
+      tire: tiresApi.tires,
+      battery: batteriesApi.batteries,
+      hardware: hardwareApi.hardware,
+      loader: loadersApi?.loaders,
+    }[type]) || [];
 
   const addSale = async (form) => {
     const qty = Number(form.qty) || 0;
     const price = Number(form.price) || 0;
+    const total = qty * price;
+    const paidAmount = form.paidAmount === '' || form.paidAmount === undefined ? total : Number(form.paidAmount);
 
     if (!form.itemType || !form.itemId) {
       showToast('⚠️ اختار الصنف الأول');
@@ -81,10 +97,14 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi }) {
       itemName: stockItem.brand || stockItem.name,
       qty,
       price,
-      total: qty * price,
+      total,
+      paidAmount,
       soldAt: form.date || new Date().toISOString().slice(0, 10),
       customerName: form.customerName || '',
       customerPhone: form.customerPhone || '',
+      paymentMethod: form.paymentMethod || 'cash',
+      soldBy: currentUserEmail || '',
+      notes: form.notes || '',
     };
 
     const { error } = await insertItem(newSale);
