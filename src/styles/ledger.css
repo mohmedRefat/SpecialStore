@@ -1,0 +1,100 @@
+/* ============ جدول/دفتر الحسابات ============ */
+
+.ledger-wrap{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+.ledger-table{
+  width:100%;
+  min-width:560px;           /* بيفرض سكرول أفقي على الموبايل بدل ما الأعمدة تتكسر */
+  border-collapse:collapse;
+  font-family:'Cairo',sans-serif;
+}
+
+.ledger-table thead th{
+  position:sticky;
+  top:0;
+  background:var(--bg);
+  color:var(--ink-soft);
+  font-size:12.5px;
+  font-weight:700;
+  text-align:center;
+  padding:12px 10px;
+  border-bottom:1.5px solid var(--line);
+  white-space:nowrap;
+}
+
+.ledger-table tbody td{
+  padding:12px 10px;
+  text-align:center;
+  font-size:14px;
+  border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+
+.ledger-table tbody tr:last-child td{
+  border-bottom:none;
+}
+
+.ledger-row-clickable{
+  cursor:pointer;
+  transition:background .12s;
+}
+.ledger-row-clickable:hover{
+  background:var(--bg);
+}
+
+/* أول عمود (اسم العميل / اسم المنتج) — ثابت لما تعمل سكرول يمين على الموبايل */
+.sticky-col{
+  position:sticky;
+  right:0;
+  background:inherit;
+  text-align:right !important;
+  z-index:1;
+}
+.ledger-table tbody tr .sticky-col{ background:var(--surface); }
+.ledger-row-clickable:hover .sticky-col{ background:var(--bg); }
+
+.ledger-strong{
+  font-weight:800;
+  color:var(--ink);
+}
+
+.ledger-total{
+  font-weight:800;
+  color:var(--primary);
+  font-family:'Tajawal',sans-serif;
+}
+
+.ledger-date{
+  color:var(--ink-soft);
+  font-size:13px;
+}
+
+.ledger-foot-label{
+  text-align:left;
+  font-weight:700;
+  color:var(--ink-soft);
+  font-size:13.5px;
+}
+
+.ledger-table tfoot td{
+  padding:13px 10px;
+  border-top:2px solid var(--line);
+  background:var(--bg);
+}
+
+.num{
+  font-variant-numeric:tabular-nums;
+  font-family:'Tajawal',sans-serif;
+}
+
+/* موبايل: خط وحشو أصغر شوية عشان الجدول ياخد مساحة أقل */
+@media(max-width:480px){
+  .ledger-table thead th{ font-size:11.5px; padding:10px 8px; }
+  .ledger-table tbody td{ font-size:13px; padding:10px 8px; }
+}

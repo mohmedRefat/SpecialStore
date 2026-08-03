@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import StatStrip from '../layout/StatStrip.jsx';
 import SearchBar from '../layout/SearchBar.jsx';
-import AccountCard from './AccountCard.jsx';
 import { fmt, fuzzyMatch } from '../../utils/helpers.js';
+import '../../styles/ledger.css';
 
 export default function AccountsPage({
   accounts,
@@ -32,14 +32,18 @@ export default function AccountsPage({
   );
 
   const filtered = accountsWithTotals.filter((a) => fuzzyMatch(query, a.name));
-
   const selected = accountsWithTotals.find((a) => a.id === selectedId);
 
+  /* ============ فتح دفتر عميل واحد ============ */
   if (selected) {
     const items = itemsFor(selected.id).sort((a, b) => (a.id < b.id ? 1 : -1));
     return (
       <>
-        <button className="btn ghost" style={{ marginBottom: 14, width: 'auto', padding: '9px 18px' }} onClick={() => setSelectedId(null)}>
+        <button
+          className="btn ghost"
+          style={{ marginBottom: 14, width: 'auto', padding: '9px 18px' }}
+          onClick={() => setSelectedId(null)}
+        >
           ▶ رجوع لكل الحسابات
         </button>
         <div className="section-title">{selected.name}</div>
@@ -54,37 +58,55 @@ export default function AccountsPage({
           <button className="btn primary" onClick={() => onOpenAddItem(selected.id)}>➕ إضافة حركة</button>
           <button className="btn ghost" onClick={() => onOpenReceipt(selected.id, selected.name)}>💵 استلام دفعة</button>
         </div>
+
         {items.length === 0 ? (
           <div className="empty">مفيش حركات مسجلة</div>
         ) : (
-          items.map((i) => (
-            <div className="item-card" key={i.id}>
-              <div className="item-top">
-                <div>
-                  <div className="item-name">{i.product}</div>
-                  <div className="item-sub">
-                    {[i.sizeOrAmp, i.origin].filter(Boolean).join(' · ')}
-                    {i.sizeOrAmp || i.origin ? ' · ' : ''}
-                    {new Date(i.itemDate).toLocaleDateString('ar-EG')}
-                  </div>
-                </div>
-                <span className="pill gold">{fmt(i.total)} ج</span>
-              </div>
-              <div className="item-grid">
-                <div className="item-metric cost"><div className="k">الكمية</div><div className="v num">{i.qty}</div></div>
-                <div className="item-metric wholesale"><div className="k">السعر</div><div className="v num">{fmt(i.price)}</div></div>
-                <div className="item-metric retail"><div className="k">الإجمالي</div><div className="v num">{fmt(i.total)}</div></div>
-              </div>
-              <div className="item-actions">
-                <button className="mini-btn" onClick={() => onDeleteItem(i.id)}>🗑️ حذف</button>
-              </div>
-            </div>
-          ))
+          <div className="ledger-wrap">
+            <table className="ledger-table">
+              <thead>
+                <tr>
+                  <th>التاريخ</th>
+                  <th>المنتج</th>
+                  <th>المقاس/الأمبير</th>
+                  <th>المنشأ</th>
+                  <th>الكمية</th>
+                  <th>السعر</th>
+                  <th>الإجمالي</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((i) => (
+                  <tr key={i.id}>
+                    <td className="ledger-date">{new Date(i.itemDate).toLocaleDateString('ar-EG')}</td>
+                    <td className="ledger-strong sticky-col">{i.product}</td>
+                    <td>{i.sizeOrAmp || '—'}</td>
+                    <td>{i.origin || '—'}</td>
+                    <td className="num">{i.qty}</td>
+                    <td className="num">{fmt(i.price)}</td>
+                    <td className="num ledger-total">{fmt(i.total)}</td>
+                    <td>
+                      <button className="mini-btn" onClick={() => onDeleteItem(i.id)}>🗑️</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={6} className="ledger-foot-label">الإجمالي الكلي</td>
+                  <td className="num ledger-total">{fmt(selected.total)}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         )}
       </>
     );
   }
 
+  /* ============ جدول كل الحسابات ============ */
   return (
     <>
       <SearchBar
@@ -97,17 +119,45 @@ export default function AccountsPage({
       {filtered.length === 0 ? (
         <div className="empty">مفيش حسابات لسه — دوس ＋ عشان تضيف عميل</div>
       ) : (
-        filtered.map((a) => (
-          <AccountCard
-            key={a.id}
-            account={a}
-            total={a.total}
-            paid={a.paid}
-            remaining={a.remaining}
-            onOpen={setSelectedId}
-            onDelete={onDeleteAccount}
-          />
-        ))
+        <div className="ledger-wrap">
+          <table className="ledger-table">
+            <thead>
+              <tr>
+                <th>اسم العميل</th>
+                <th>الإجمالي</th>
+                <th>المدفوع</th>
+                <th>الباقي</th>
+                <th>الحالة</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((a) => (
+                <tr key={a.id} className="ledger-row-clickable" onClick={() => setSelectedId(a.id)}>
+                  <td className="ledger-strong sticky-col">{a.name}</td>
+                  <td className="num">{fmt(a.total)}</td>
+                  <td className="num" style={{ color: 'var(--success)' }}>{fmt(a.paid)}</td>
+                  <td className="num" style={{ color: a.remaining > 0 ? 'var(--danger)' : 'var(--success)' }}>
+                    {fmt(a.remaining)}
+                  </td>
+                  <td>
+                    <span className={`pill ${a.remaining > 0 ? 'danger' : 'success'}`}>
+                      {a.remaining > 0 ? 'باقي عليه' : 'متسوّى'}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="mini-btn"
+                      onClick={(e) => { e.stopPropagation(); onDeleteAccount(a.id); }}
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   );
