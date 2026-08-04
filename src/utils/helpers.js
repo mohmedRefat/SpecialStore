@@ -24,13 +24,20 @@ export function monthsElapsed(start, end) {
   return Math.max(0, months);
 }
 
+export function weeksElapsed(start, end) {
+  const days = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.floor(days / 7));
+}
+
+// c.frequency: 'monthly' (الافتراضي) أو 'weekly' — يحدد إيقاع استحقاق الأقساط
 export function computeInstallmentStatus(c) {
   if (Number(c.remaining) <= 0) return 'مسدد';
   if (!c.firstInstallmentDate) return 'جاري';
   const start = new Date(c.firstInstallmentDate);
   const today = new Date();
   if (start > today) return 'جاري';
-  const expectedDue = Math.min(c.installments, monthsElapsed(start, today) + 1);
+  const elapsed = c.frequency === 'weekly' ? weeksElapsed(start, today) : monthsElapsed(start, today);
+  const expectedDue = Math.min(c.installments, elapsed + 1);
   if (Number(c.paid) < expectedDue) return 'متأخر';
   return 'جاري';
 }

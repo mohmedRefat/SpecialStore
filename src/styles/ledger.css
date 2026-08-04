@@ -98,3 +98,26 @@
   .ledger-table thead th{ font-size:11.5px; padding:10px 8px; }
   .ledger-table tbody td{ font-size:13px; padding:10px 8px; }
 }
+
+/* أزرار الإجراءات جوه خلية الجدول (زوّد/نقّص/حذف) */
+.ledger-actions{
+  display:flex;
+  gap:5px;
+  justify-content:center;
+}
+.qty-btn{
+  width:30px;height:30px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:var(--bg);
+  font-size:13px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink-soft);
+  padding:0;
+}
+.qty-btn:active{ transform:scale(.92); }
+.qty-btn.danger{
+  border-color:var(--danger-soft);
+  color:var(--danger);
+}
