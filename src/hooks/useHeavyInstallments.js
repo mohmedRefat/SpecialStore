@@ -16,6 +16,7 @@ function mapFromDb(r) {
     remaining: r.remaining,
     firstInstallmentDate: r.first_installment_date || '',
     lastPaymentDate: r.last_payment_date || '',
+    frequency: r.frequency || 'monthly',
   };
 }
 
@@ -33,11 +34,11 @@ function mapToDb(c) {
     remaining: c.remaining,
     first_installment_date: c.firstInstallmentDate || null,
     last_payment_date: c.lastPaymentDate || null,
+    frequency: c.frequency || 'monthly',
   };
 }
 
 // نفس بالظبط منطق useInstallments.js، بس على جدول heavy_installments المنفصل
-// وبيبدأ فاضي (مفيش بيانات تجريبية) لأنه نوع حسابات جديد
 export function useHeavyInstallments() {
   const showToast = useToast();
   const {
@@ -71,6 +72,7 @@ export function useHeavyInstallments() {
       monthly,
       firstInstallmentDate: form.date || '',
       lastPaymentDate: '',
+      frequency: form.frequency || 'monthly',
     };
     const { error } = await insertItem(newC);
     if (error) showToast('⚠️ فشل الحفظ');

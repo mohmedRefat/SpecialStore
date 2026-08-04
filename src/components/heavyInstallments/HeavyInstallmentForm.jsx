@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export default function HeavyInstallmentForm({ onSave, onClose }) {
   const [form, setForm] = useState({
-    name: '', phone: '', desc: '', total: '', down: '', installments: '', paid: 0, date: '',
+    name: '', phone: '', desc: '', total: '', down: '', installments: '', paid: 0, date: '', frequency: 'monthly',
   });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -27,6 +27,13 @@ export default function HeavyInstallmentForm({ onSave, onClose }) {
       <div className="field-row">
         <div className="field"><label>عدد الأقساط</label><input type="number" value={form.installments} onChange={set('installments')} /></div>
         <div className="field"><label>أقساط مدفوعة</label><input type="number" value={form.paid} onChange={set('paid')} /></div>
+      </div>
+      <div className="field">
+        <label>نوع القسط</label>
+        <select value={form.frequency} onChange={set('frequency')}>
+          <option value="monthly">شهري</option>
+          <option value="weekly">أسبوعي</option>
+        </select>
       </div>
       <div className="field"><label>تاريخ أول قسط (سيبها فاضية لو لسه محدّدتش)</label><input type="date" value={form.date} onChange={set('date')} /></div>
       <div className="modal-actions">
