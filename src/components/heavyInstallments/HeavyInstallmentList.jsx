@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import HeavyInstallmentCard from './HeavyInstallmentCard.jsx';
 import { fuzzyMatch, fmt, computeInstallmentStatus } from '../../utils/helpers.js';
 
-export default function HeavyInstallmentList({ heavyInstallments, onLogPayment, onUndoPayment, onOpenDateForm, onOpenAdd }) {
+export default function HeavyInstallmentList({ heavyInstallments, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const overdueCount = heavyInstallments.filter((c) => computeInstallmentStatus(c) === 'متأخر').length;
   const totalOwed = heavyInstallments.reduce((s, c) => s + (Number(c.remaining) || 0), 0);
@@ -34,7 +34,7 @@ export default function HeavyInstallmentList({ heavyInstallments, onLogPayment, 
             <HeavyInstallmentCard
               key={c.id}
               c={c}
-              onLogPayment={onLogPayment}
+              onOpenPaymentForm={onOpenPaymentForm}
               onUndoPayment={onUndoPayment}
               onOpenDateForm={onOpenDateForm}
             />

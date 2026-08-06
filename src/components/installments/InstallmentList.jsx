@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import InstallmentCard from './InstallmentCard.jsx';
 import { fuzzyMatch, fmt, computeInstallmentStatus } from '../../utils/helpers.js';
 
-export default function InstallmentList({ installments, onLogPayment, onUndoPayment, onOpenDateForm, onOpenAdd }) {
+export default function InstallmentList({ installments, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const overdueCount = installments.filter((c) => computeInstallmentStatus(c) === 'متأخر').length;
   const totalOwed = installments.reduce((s, c) => s + (Number(c.remaining) || 0), 0);
@@ -34,7 +34,7 @@ export default function InstallmentList({ installments, onLogPayment, onUndoPaym
             <InstallmentCard
               key={c.id}
               c={c}
-              onLogPayment={onLogPayment}
+              onOpenPaymentForm={onOpenPaymentForm}
               onUndoPayment={onUndoPayment}
               onOpenDateForm={onOpenDateForm}
             />
