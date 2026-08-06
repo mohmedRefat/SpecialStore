@@ -31,6 +31,7 @@ import InstallmentDateForm from "./components/installments/InstallmentDateForm.j
 import HeavyInstallmentList from "./components/heavyInstallments/HeavyInstallmentList.jsx";
 import HeavyInstallmentForm from "./components/heavyInstallments/HeavyInstallmentForm.jsx";
 import HeavyInstallmentDateForm from "./components/heavyInstallments/HeavyInstallmentDateForm.jsx";
+import PaymentAmountForm from "./components/installments/PaymentAmountForm.jsx";
 import { useTires } from "./hooks/useTires.js";
 import { useBatteries } from "./hooks/useBatteries.js";
 import { useInstallments } from "./hooks/useInstallments.js";
@@ -206,7 +207,9 @@ export default function App() {
             {activeTab === "installments" && (
               <InstallmentList
                 installments={installmentsApi.installments}
-                onLogPayment={installmentsApi.logPayment}
+                onOpenPaymentForm={(id) =>
+                  setModal({ type: "paymentForm", payload: { id, kind: "installments" } })
+                }
                 onUndoPayment={installmentsApi.undoPayment}
                 onOpenDateForm={(id) =>
                   setModal({ type: "installmentDateForm", payload: id })
@@ -217,7 +220,9 @@ export default function App() {
             {activeTab === "heavyInstallments" && (
               <HeavyInstallmentList
                 heavyInstallments={heavyInstallmentsApi.heavyInstallments}
-                onLogPayment={heavyInstallmentsApi.logPayment}
+                onOpenPaymentForm={(id) =>
+                  setModal({ type: "paymentForm", payload: { id, kind: "heavy" } })
+                }
                 onUndoPayment={heavyInstallmentsApi.undoPayment}
                 onOpenDateForm={(id) =>
                   setModal({ type: "heavyInstallmentDateForm", payload: id })
@@ -303,6 +308,21 @@ export default function App() {
             )}
             onSave={(date) =>
               heavyInstallmentsApi.setFirstInstallmentDate(modal.payload, date)
+            }
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "paymentForm" && (
+          <PaymentAmountForm
+            customer={
+              modal.payload.kind === "heavy"
+                ? heavyInstallmentsApi.heavyInstallments.find((c) => c.id === modal.payload.id)
+                : installmentsApi.installments.find((c) => c.id === modal.payload.id)
+            }
+            onSave={(amount) =>
+              modal.payload.kind === "heavy"
+                ? heavyInstallmentsApi.logPayment(modal.payload.id, amount)
+                : installmentsApi.logPayment(modal.payload.id, amount)
             }
             onClose={closeModal}
           />

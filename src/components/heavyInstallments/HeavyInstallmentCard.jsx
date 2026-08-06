@@ -1,6 +1,6 @@
 import { fmt, computeInstallmentStatus } from '../../utils/helpers.js';
 
-export default function HeavyInstallmentCard({ c, onLogPayment, onUndoPayment, onOpenDateForm }) {
+export default function HeavyInstallmentCard({ c, onOpenPaymentForm, onUndoPayment, onOpenDateForm }) {
   const pct = c.installments > 0 ? Math.min(100, Math.round((c.paid / c.installments) * 100)) : 0;
   const status = computeInstallmentStatus(c);
   const cls = status === 'متأخر' ? 'danger' : status === 'مسدد' ? 'success' : 'gold';
@@ -45,6 +45,7 @@ export default function HeavyInstallmentCard({ c, onLogPayment, onUndoPayment, o
       </div>
       <div className="inst-nums">
         <div>الإجمالي<b className="num">{fmt(c.total)}</b></div>
+        <div>المقدّم<b className="num" style={{ color: 'var(--success)' }}>{fmt(c.down)}</b></div>
         <div>قسط كل {unitLabel}<b className="num">{fmt(c.monthly)}</b></div>
         <div>المتبقي<b className="num" style={{ color: 'var(--danger)' }}>{fmt(c.remaining)}</b></div>
       </div>
@@ -58,7 +59,7 @@ export default function HeavyInstallmentCard({ c, onLogPayment, onUndoPayment, o
           <button className="btn ghost" onClick={() => onUndoPayment(c.id)}>↩️ تراجع</button>
         )}
         {status !== 'مسدد' && (
-          <button className="btn primary" onClick={() => onLogPayment(c.id)}>✅ سجّل دفعة</button>
+          <button className="btn primary" onClick={() => onOpenPaymentForm(c.id)}>✅ سجّل دفعة</button>
         )}
       </div>
     </div>

@@ -16,6 +16,7 @@ function mapFromDb(r) {
     remaining: r.remaining,
     firstInstallmentDate: r.first_installment_date || '',
     lastPaymentDate: r.last_payment_date || '',
+    lastPaymentAmount: r.last_payment_amount ?? null,
     frequency: r.frequency || 'monthly',
   };
 }
@@ -34,6 +35,7 @@ function mapToDb(c) {
     remaining: c.remaining,
     first_installment_date: c.firstInstallmentDate || null,
     last_payment_date: c.lastPaymentDate || null,
+    last_payment_amount: c.lastPaymentAmount ?? null,
     frequency: c.frequency || 'monthly',
   };
 }
@@ -72,22 +74,25 @@ export function useHeavyInstallments() {
       monthly,
       firstInstallmentDate: form.date || '',
       lastPaymentDate: '',
+      lastPaymentAmount: null,
       frequency: form.frequency || 'monthly',
     };
     const { error } = await insertItem(newC);
     if (error) showToast('⚠️ فشل الحفظ');
   };
 
-  const logPayment = async (id) => {
+  // amount: المبلغ الفعلي اللي دفعه دلوقتي — ممكن يكون مختلف عن "القسط" المحسوب
+  const logPayment = async (id, amount) => {
     const c = heavyInstallments.find((x) => x.id === id);
     if (!c) return;
+    const payAmount = amount !== undefined && amount !== null ? Number(amount) : Number(c.monthly);
     const newPaid = Number(c.paid) + 1;
-    const newRemaining = Math.max(0, Number(c.remaining) - Number(c.monthly));
+    const newRemaining = Math.max(0, Number(c.remaining) - payAmount);
     const today = new Date().toISOString().slice(0, 10);
     const { error } = await updateItem(
       id,
-      { paid: newPaid, remaining: newRemaining, lastPaymentDate: today },
-      { paid: newPaid, remaining: newRemaining, last_payment_date: today }
+      { paid: newPaid, remaining: newRemaining, lastPaymentDate: today, lastPaymentAmount: payAmount },
+      { paid: newPaid, remaining: newRemaining, last_payment_date: today, last_payment_amount: payAmount }
     );
     if (error) {
       showToast('⚠️ فشل الحفظ');
@@ -99,8 +104,11 @@ export function useHeavyInstallments() {
   const undoPayment = async (id) => {
     const c = heavyInstallments.find((x) => x.id === id);
     if (!c || c.paid <= 0) return;
+    const restoreAmount = c.lastPaymentAmount !== undefined && c.lastPaymentAmount !== null
+      ? Number(c.lastPaymentAmount)
+      : Number(c.monthly);
     const newPaid = Number(c.paid) - 1;
-    const newRemaining = Number(c.remaining) + Number(c.monthly);
+    const newRemaining = Number(c.remaining) + restoreAmount;
     const { error } = await updateItem(
       id,
       { paid: newPaid, remaining: newRemaining },
