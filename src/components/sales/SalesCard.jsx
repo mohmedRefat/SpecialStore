@@ -1,6 +1,6 @@
 import { fmt } from '../../utils/helpers.js';
 
-const CATEGORY_LABELS = { tire: 'كاوتش', battery: 'بطارية', hardware: 'حديد', loader: 'لودر/زراعي' };
+const CATEGORY_LABELS = { tire: 'كاوتش', battery: 'بطارية', hardware: 'حديد', loader: 'لودر/زراعي', manual: 'يدوي' };
 const PAYMENT_LABELS = { cash: 'نقدي', credit: 'آجل' };
 
 export default function SalesCard({ sale, onDelete }) {
@@ -15,7 +15,7 @@ export default function SalesCard({ sale, onDelete }) {
           <div className="item-sub">
             {sale.customerPhone || '—'} · {new Date(sale.soldAt).toLocaleDateString('ar-EG')}
           </div>
-          <div className="item-sub" style={{ marginTop: 2 }}>
+          <div className="item-sub" style={{ marginTop: 2, whiteSpace: 'pre-line' }}>
             {sale.itemName} · {CATEGORY_LABELS[sale.itemType] || sale.itemType}
           </div>
         </div>

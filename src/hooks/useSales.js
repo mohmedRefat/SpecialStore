@@ -70,31 +70,46 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
     const total = qty * price;
     const paidAmount = form.paidAmount === '' || form.paidAmount === undefined ? total : Number(form.paidAmount);
 
-    if (!form.itemType || !form.itemId) {
-      showToast('⚠️ اختار الصنف الأول');
-      return;
-    }
     if (qty <= 0) {
       showToast('⚠️ الكمية لازم تكون أكبر من صفر');
       return;
     }
 
-    const items = getCategoryItems(form.itemType);
-    const stockItem = items.find((i) => i.id === form.itemId);
-    if (!stockItem) {
-      showToast('⚠️ الصنف مش موجود');
-      return;
-    }
-    if ((stockItem.qty || 0) < qty) {
-      showToast('⚠️ الكمية المتاحة في المخزون مش كفاية');
-      return;
+    // وضع الكتابة اليدوي: مفيش صنف مربوط بالمخزون، فمفيش خصم أوتوماتيك
+    const isManual = form.mode === 'manual' || !form.itemId;
+
+    let itemName = '';
+    let stockItem = null;
+
+    if (!isManual) {
+      if (!form.itemType || !form.itemId) {
+        showToast('⚠️ اختار الصنف الأول');
+        return;
+      }
+      const items = getCategoryItems(form.itemType);
+      stockItem = items.find((i) => i.id === form.itemId);
+      if (!stockItem) {
+        showToast('⚠️ الصنف مش موجود');
+        return;
+      }
+      if ((stockItem.qty || 0) < qty) {
+        showToast('⚠️ الكمية المتاحة في المخزون مش كفاية');
+        return;
+      }
+      itemName = stockItem.brand || stockItem.name;
+    } else {
+      itemName = (form.manualItemName || '').trim();
+      if (!itemName) {
+        showToast('⚠️ اكتب اسم/بيان الصنف');
+        return;
+      }
     }
 
     const newSale = {
       id: 's' + Date.now(),
-      itemType: form.itemType,
-      itemId: form.itemId,
-      itemName: stockItem.brand || stockItem.name,
+      itemType: form.itemType || 'manual',
+      itemId: isManual ? null : form.itemId,
+      itemName,
       qty,
       price,
       total,
@@ -113,9 +128,13 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
       return;
     }
 
-    const api = getCategoryApi(form.itemType);
-    await api.adjustQty(form.itemId, -qty);
-    showToast('✅ اتسجل البيع وخصم من المخزون');
+    if (!isManual) {
+      const api = getCategoryApi(form.itemType);
+      await api.adjustQty(form.itemId, -qty);
+      showToast('✅ اتسجل البيع وخصم من المخزون');
+    } else {
+      showToast('✅ اتسجل البيع (يدوي - من غير خصم من المخزون)');
+    }
   };
 
   const deleteSale = async (id) => {

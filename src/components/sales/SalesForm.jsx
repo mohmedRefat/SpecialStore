@@ -14,8 +14,10 @@ const PAYMENT_OPTIONS = [
 
 export default function SalesForm({ tires, batteries, hardware, loaders, onSave, onClose }) {
   const [form, setForm] = useState({
+    mode: 'stock', // 'stock' = من المخزون (بيخصم أوتوماتيك) | 'manual' = كتابة يدوي (من غير خصم)
     itemType: 'tire',
     itemId: '',
+    manualItemName: '',
     qty: 1,
     price: '',
     paidAmount: '',
@@ -62,28 +64,72 @@ export default function SalesForm({ tires, batteries, hardware, loaders, onSave,
         </div>
       </div>
 
+      {/* ============ اختيار الوضع: من المخزون / كتابة يدوي ============ */}
       <div className="field">
-        <label>النوع</label>
-        <select
-          value={form.itemType}
-          onChange={(e) => setForm({ ...form, itemType: e.target.value, itemId: '', price: '' })}
-        >
-          {CATEGORY_OPTIONS.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
-          ))}
-        </select>
+        <label>طريقة تسجيل الصنف</label>
+        <div className="modal-actions" style={{ marginTop: 0 }}>
+          <button
+            type="button"
+            className={form.mode === 'stock' ? 'btn primary' : 'btn ghost'}
+            onClick={() => setForm({ ...form, mode: 'stock' })}
+          >
+            📦 من المخزون
+          </button>
+          <button
+            type="button"
+            className={form.mode === 'manual' ? 'btn primary' : 'btn ghost'}
+            onClick={() => setForm({ ...form, mode: 'manual' })}
+          >
+            ✍️ كتابة يدوي
+          </button>
+        </div>
       </div>
-      <div className="field">
-        <label>الصنف</label>
-        <select value={form.itemId} onChange={handleItemChange}>
-          <option value="">اختار...</option>
-          {itemsForType.map((i) => (
-            <option key={i.id} value={i.id}>
-              {labelFor(i)} (متاح: {i.qty})
-            </option>
-          ))}
-        </select>
-      </div>
+
+      {form.mode === 'stock' ? (
+        <>
+          <div className="field">
+            <label>النوع</label>
+            <select
+              value={form.itemType}
+              onChange={(e) => setForm({ ...form, itemType: e.target.value, itemId: '', price: '' })}
+            >
+              {CATEGORY_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label>الصنف</label>
+            <select value={form.itemId} onChange={handleItemChange}>
+              <option value="">اختار...</option>
+              {itemsForType.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {labelFor(i)} (متاح: {i.qty})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="item-sub" style={{ marginBottom: 12 }}>
+            الكمية دي هتتخصم أوتوماتيك من المخزون بعد الحفظ
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="field">
+            <label>بيان الصنف — اكتب أي حاجة (مش لازم تكون موجودة في المخزون)</label>
+            <textarea
+              rows={3}
+              value={form.manualItemName}
+              onChange={(e) => setForm({ ...form, manualItemName: e.target.value })}
+              placeholder={'مثال:\n2 كاوتش نص نقل مستعمل\nبطارية 70 أمبير'}
+            />
+          </div>
+          <div className="item-sub" style={{ marginBottom: 12 }}>
+            ⚠️ البيع ده مش هيتخصم من المخزون تلقائي
+          </div>
+        </>
+      )}
+
       <div className="field-row">
         <div className="field">
           <label>الكمية</label>
