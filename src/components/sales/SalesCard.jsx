@@ -1,9 +1,9 @@
 import { fmt } from '../../utils/helpers.js';
 
-const CATEGORY_LABELS = { tire: 'كاوتش', battery: 'بطارية', hardware: 'حديد', loader: 'لودر/زراعي' };
+const CATEGORY_LABELS = { tire: 'كاوتش', battery: 'بطارية', hardware: 'حديد', loader: 'لودر/زراعي', manual: 'يدوي' };
 const PAYMENT_LABELS = { cash: 'نقدي', credit: 'آجل' };
 
-export default function SalesCard({ sale, onDelete }) {
+export default function SalesCard({ sale, onDelete, onOpenPaymentForm }) {
   const paid = sale.paidAmount === null || sale.paidAmount === undefined ? sale.total : Number(sale.paidAmount);
   const remaining = Math.max(0, Number(sale.total) - paid);
 
@@ -15,7 +15,7 @@ export default function SalesCard({ sale, onDelete }) {
           <div className="item-sub">
             {sale.customerPhone || '—'} · {new Date(sale.soldAt).toLocaleDateString('ar-EG')}
           </div>
-          <div className="item-sub" style={{ marginTop: 2 }}>
+          <div className="item-sub" style={{ marginTop: 2, whiteSpace: 'pre-line' }}>
             {sale.itemName} · {CATEGORY_LABELS[sale.itemType] || sale.itemType}
           </div>
         </div>
@@ -41,6 +41,9 @@ export default function SalesCard({ sale, onDelete }) {
         </div>
       </div>
       <div className="item-actions">
+        {remaining > 0 && (
+          <button className="mini-btn" onClick={() => onOpenPaymentForm(sale.id)}>💵 سجّل دفعة</button>
+        )}
         <button className="mini-btn" onClick={() => onDelete(sale.id)}>🗑️ حذف</button>
       </div>
     </div>

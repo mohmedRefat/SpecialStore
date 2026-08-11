@@ -51,6 +51,7 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
     loading,
     cloudMode,
     insertItem,
+    updateItem,
     removeItem,
   } = useSupabaseTable('sales', [], { mapFromDb, mapToDb });
 
@@ -70,31 +71,46 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
     const total = qty * price;
     const paidAmount = form.paidAmount === '' || form.paidAmount === undefined ? total : Number(form.paidAmount);
 
-    if (!form.itemType || !form.itemId) {
-      showToast('⚠️ اختار الصنف الأول');
-      return;
-    }
     if (qty <= 0) {
       showToast('⚠️ الكمية لازم تكون أكبر من صفر');
       return;
     }
 
-    const items = getCategoryItems(form.itemType);
-    const stockItem = items.find((i) => i.id === form.itemId);
-    if (!stockItem) {
-      showToast('⚠️ الصنف مش موجود');
-      return;
-    }
-    if ((stockItem.qty || 0) < qty) {
-      showToast('⚠️ الكمية المتاحة في المخزون مش كفاية');
-      return;
+    // وضع الكتابة اليدوي: مفيش صنف مربوط بالمخزون، فمفيش خصم أوتوماتيك
+    const isManual = form.mode === 'manual' || !form.itemId;
+
+    let itemName = '';
+    let stockItem = null;
+
+    if (!isManual) {
+      if (!form.itemType || !form.itemId) {
+        showToast('⚠️ اختار الصنف الأول');
+        return;
+      }
+      const items = getCategoryItems(form.itemType);
+      stockItem = items.find((i) => i.id === form.itemId);
+      if (!stockItem) {
+        showToast('⚠️ الصنف مش موجود');
+        return;
+      }
+      if ((stockItem.qty || 0) < qty) {
+        showToast('⚠️ الكمية المتاحة في المخزون مش كفاية');
+        return;
+      }
+      itemName = stockItem.brand || stockItem.name;
+    } else {
+      itemName = (form.manualItemName || '').trim();
+      if (!itemName) {
+        showToast('⚠️ اكتب اسم/بيان الصنف');
+        return;
+      }
     }
 
     const newSale = {
       id: 's' + Date.now(),
-      itemType: form.itemType,
-      itemId: form.itemId,
-      itemName: stockItem.brand || stockItem.name,
+      itemType: form.itemType || 'manual',
+      itemId: isManual ? null : form.itemId,
+      itemName,
       qty,
       price,
       total,
@@ -113,9 +129,31 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
       return;
     }
 
-    const api = getCategoryApi(form.itemType);
-    await api.adjustQty(form.itemId, -qty);
-    showToast('✅ اتسجل البيع وخصم من المخزون');
+    if (!isManual) {
+      const api = getCategoryApi(form.itemType);
+      await api.adjustQty(form.itemId, -qty);
+      showToast('✅ اتسجل البيع وخصم من المخزون');
+    } else {
+      showToast('✅ اتسجل البيع (يدوي - من غير خصم من المخزون)');
+    }
+  };
+
+  const updateSale = async (id, patch) => {
+    const dbPatch = {};
+    if ('customerName' in patch) dbPatch.customer_name = patch.customerName || null;
+    if ('customerPhone' in patch) dbPatch.customer_phone = patch.customerPhone || null;
+    if ('price' in patch) dbPatch.price = patch.price;
+    if ('total' in patch) dbPatch.total = patch.total;
+    if ('paidAmount' in patch) dbPatch.paid_amount = patch.paidAmount;
+    if ('paymentMethod' in patch) dbPatch.payment_method = patch.paymentMethod;
+    if ('notes' in patch) dbPatch.notes = patch.notes || null;
+
+    const { error } = await updateItem(id, patch, dbPatch);
+    if (error) {
+      showToast('⚠️ فشل التعديل');
+      return;
+    }
+    showToast('✅ اتعدّلت البيانات');
   };
 
   const deleteSale = async (id) => {
@@ -124,5 +162,5 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
     if (error) showToast('⚠️ فشل الحذف');
   };
 
-  return { sales, loading, cloudMode, addSale, deleteSale };
+  return { sales, loading, cloudMode, addSale, updateSale, deleteSale };
 }
