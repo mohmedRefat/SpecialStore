@@ -3,7 +3,7 @@ import { fmt } from '../../utils/helpers.js';
 const CATEGORY_LABELS = { tire: 'كاوتش', battery: 'بطارية', hardware: 'حديد', loader: 'لودر/زراعي', manual: 'يدوي' };
 const PAYMENT_LABELS = { cash: 'نقدي', credit: 'آجل' };
 
-export default function SalesCard({ sale, onDelete }) {
+export default function SalesCard({ sale, onDelete, onOpenPaymentForm }) {
   const paid = sale.paidAmount === null || sale.paidAmount === undefined ? sale.total : Number(sale.paidAmount);
   const remaining = Math.max(0, Number(sale.total) - paid);
 
@@ -41,6 +41,9 @@ export default function SalesCard({ sale, onDelete }) {
         </div>
       </div>
       <div className="item-actions">
+        {remaining > 0 && (
+          <button className="mini-btn" onClick={() => onOpenPaymentForm(sale.id)}>💵 سجّل دفعة</button>
+        )}
         <button className="mini-btn" onClick={() => onDelete(sale.id)}>🗑️ حذف</button>
       </div>
     </div>

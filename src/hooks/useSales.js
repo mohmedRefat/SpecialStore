@@ -51,6 +51,7 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
     loading,
     cloudMode,
     insertItem,
+    updateItem,
     removeItem,
   } = useSupabaseTable('sales', [], { mapFromDb, mapToDb });
 
@@ -137,11 +138,29 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
     }
   };
 
+  const updateSale = async (id, patch) => {
+    const dbPatch = {};
+    if ('customerName' in patch) dbPatch.customer_name = patch.customerName || null;
+    if ('customerPhone' in patch) dbPatch.customer_phone = patch.customerPhone || null;
+    if ('price' in patch) dbPatch.price = patch.price;
+    if ('total' in patch) dbPatch.total = patch.total;
+    if ('paidAmount' in patch) dbPatch.paid_amount = patch.paidAmount;
+    if ('paymentMethod' in patch) dbPatch.payment_method = patch.paymentMethod;
+    if ('notes' in patch) dbPatch.notes = patch.notes || null;
+
+    const { error } = await updateItem(id, patch, dbPatch);
+    if (error) {
+      showToast('⚠️ فشل التعديل');
+      return;
+    }
+    showToast('✅ اتعدّلت البيانات');
+  };
+
   const deleteSale = async (id) => {
     if (!window.confirm('متأكد إنك عايز تمسح عملية البيع دي؟ (الكمية مش هترجع للمخزون تلقائي)')) return;
     const { error } = await removeItem(id);
     if (error) showToast('⚠️ فشل الحذف');
   };
 
-  return { sales, loading, cloudMode, addSale, deleteSale };
+  return { sales, loading, cloudMode, addSale, updateSale, deleteSale };
 }

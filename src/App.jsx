@@ -7,6 +7,7 @@ import LoaderForm from "./components/loaders/LoaderForm.jsx";
 import { useLoaders } from "./hooks/useLoaders.js";
 import SalesList from "./components/sales/SalesList.jsx";
 import SalesForm from "./components/sales/SalesForm.jsx";
+import SalePaymentForm from "./components/sales/SalePaymentForm.jsx";
 import { useSales } from "./hooks/useSales.js";
 import ReceiptList from "./components/receipts/ReceiptList.jsx";
 import ReceiptForm from "./components/receipts/ReceiptForm.jsx";
@@ -174,6 +175,7 @@ export default function App() {
                 sales={salesApi.sales}
                 onDelete={salesApi.deleteSale}
                 onOpenAdd={() => setModal({ type: "salesForm" })}
+                onOpenPaymentForm={(id) => setModal({ type: "salePaymentForm", payload: id })}
               />
             )}
             {activeTab === "receipts" && (
@@ -254,6 +256,22 @@ export default function App() {
             hardware={hardwareApi.hardware}
             loaders={loadersApi.loaders}
             onSave={salesApi.addSale}
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "salePaymentForm" && (
+          <SalePaymentForm
+            sale={salesApi.sales.find((s) => s.id === modal.payload)}
+            onSave={(amount) => {
+              const sale = salesApi.sales.find((s) => s.id === modal.payload);
+              if (!sale) return;
+              const paidSoFar =
+                sale.paidAmount === null || sale.paidAmount === undefined
+                  ? sale.total
+                  : Number(sale.paidAmount);
+              const newPaid = Math.min(Number(sale.total), paidSoFar + amount);
+              salesApi.updateSale(modal.payload, { paidAmount: newPaid });
+            }}
             onClose={closeModal}
           />
         )}
