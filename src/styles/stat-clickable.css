@@ -1,0 +1,16 @@
+/* ضيف الجزء ده في ملف الستايل الرئيسي بتاعك (جنب تعريف .stat الأصلي) */
+
+.stat.clickable{
+  cursor:pointer;
+  transition:transform .1s, box-shadow .15s;
+}
+.stat.clickable:active{
+  transform:scale(.97);
+}
+.stat.clickable:hover{
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.stat.active{
+  outline:2px solid var(--primary);
+  outline-offset:-2px;
+}
