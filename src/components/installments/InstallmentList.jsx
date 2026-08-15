@@ -65,6 +65,7 @@ export default function InstallmentList({
               onOpenPaymentForm={onOpenPaymentForm}
               onUndoPayment={onUndoPayment}
               onOpenDateForm={onOpenDateForm}
+              onOpenEditCount={onOpenEditCount}
             />
           ))}
         </div>

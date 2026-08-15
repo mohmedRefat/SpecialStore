@@ -65,6 +65,7 @@ export default function HeavyInstallmentList({
               onOpenPaymentForm={onOpenPaymentForm}
               onUndoPayment={onUndoPayment}
               onOpenDateForm={onOpenDateForm}
+              onOpenEditCount={onOpenEditCount}
             />
           ))}
         </div>
