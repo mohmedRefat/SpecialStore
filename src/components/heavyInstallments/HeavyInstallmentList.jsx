@@ -1,33 +1,48 @@
-import { useState } from 'react';
-import StatStrip from '../layout/StatStrip.jsx';
-import SearchBar from '../layout/SearchBar.jsx';
-import HeavyInstallmentCard from './HeavyInstallmentCard.jsx';
-import { fuzzyMatch, fmt, computeInstallmentStatus } from '../../utils/helpers.js';
+import { useState } from "react";
+import StatStrip from "../layout/StatStrip.jsx";
+import SearchBar from "../layout/SearchBar.jsx";
+import HeavyInstallmentCard from "./HeavyInstallmentCard.jsx";
+import {
+  fuzzyMatch,
+  fmt,
+  computeInstallmentStatus,
+} from "../../utils/helpers.js";
 
-export default function HeavyInstallmentList({ heavyInstallments, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenEditCount, onOpenAdd }) {
-  const [query, setQuery] = useState('');
+export default function HeavyInstallmentList({
+  heavyInstallments,
+  onOpenPaymentForm,
+  onUndoPayment,
+  onOpenDateForm,
+  onOpenAdd,
+}) {
+  const [query, setQuery] = useState("");
   const [overdueOnly, setOverdueOnly] = useState(false);
 
-  const overdueCount = heavyInstallments.filter((c) => computeInstallmentStatus(c) === 'متأخر').length;
-  const totalOwed = heavyInstallments.reduce((s, c) => s + (Number(c.remaining) || 0), 0);
+  const overdueCount = heavyInstallments.filter(
+    (c) => computeInstallmentStatus(c) === "متأخر",
+  ).length;
+  const totalOwed = heavyInstallments.reduce(
+    (s, c) => s + (Number(c.remaining) || 0),
+    0,
+  );
 
   const filtered = heavyInstallments
     .filter((c) => fuzzyMatch(query, c.name))
-    .filter((c) => !overdueOnly || computeInstallmentStatus(c) === 'متأخر');
+    .filter((c) => !overdueOnly || computeInstallmentStatus(c) === "متأخر");
 
   return (
     <>
       <StatStrip
         stats={[
-          { value: heavyInstallments.length, label: 'عدد العملاء' },
+          { value: heavyInstallments.length, label: "عدد العملاء" },
           {
             value: overdueCount,
-            label: overdueOnly ? 'متأخرين (دوس تلغي)' : 'متأخرين',
-            variant: 'warn',
+            label: overdueOnly ? "متأخرين (دوس تلغي)" : "متأخرين",
+            variant: "warn",
             onClick: () => setOverdueOnly((v) => !v),
             active: overdueOnly,
           },
-          { value: fmt(totalOwed), label: 'إجمالي المتبقي', variant: 'gold' },
+          { value: fmt(totalOwed), label: "إجمالي المتبقي", variant: "gold" },
         ]}
       />
       <SearchBar
@@ -39,7 +54,7 @@ export default function HeavyInstallmentList({ heavyInstallments, onOpenPaymentF
       />
       {filtered.length === 0 ? (
         <div className="empty">
-          {overdueOnly ? 'مفيش متأخرين دلوقتي 👍' : 'مفيش عملاء مطابقين'}
+          {overdueOnly ? "مفيش متأخرين دلوقتي 👍" : "مفيش عملاء مطابقين"}
         </div>
       ) : (
         <div>
