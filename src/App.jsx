@@ -29,6 +29,7 @@ import BatteryForm from "./components/batteries/BatteryForm.jsx";
 import InstallmentList from "./components/installments/InstallmentList.jsx";
 import InstallmentForm from "./components/installments/InstallmentForm.jsx";
 import InstallmentDateForm from "./components/installments/InstallmentDateForm.jsx";
+import EditInstallmentsCountForm from "./components/installments/EditInstallmentsCountForm.jsx";
 import HeavyInstallmentList from "./components/heavyInstallments/HeavyInstallmentList.jsx";
 import HeavyInstallmentForm from "./components/heavyInstallments/HeavyInstallmentForm.jsx";
 import HeavyInstallmentDateForm from "./components/heavyInstallments/HeavyInstallmentDateForm.jsx";
@@ -216,6 +217,9 @@ export default function App() {
                 onOpenDateForm={(id) =>
                   setModal({ type: "installmentDateForm", payload: id })
                 }
+                onOpenEditCount={(id) =>
+                  setModal({ type: "editCountForm", payload: { id, kind: "installments" } })
+                }
                 onOpenAdd={() => setModal({ type: "installmentForm" })}
               />
             )}
@@ -228,6 +232,9 @@ export default function App() {
                 onUndoPayment={heavyInstallmentsApi.undoPayment}
                 onOpenDateForm={(id) =>
                   setModal({ type: "heavyInstallmentDateForm", payload: id })
+                }
+                onOpenEditCount={(id) =>
+                  setModal({ type: "editCountForm", payload: { id, kind: "heavy" } })
                 }
                 onOpenAdd={() => setModal({ type: "heavyInstallmentForm" })}
               />
@@ -327,6 +334,20 @@ export default function App() {
             onSave={(date) =>
               heavyInstallmentsApi.setFirstInstallmentDate(modal.payload, date)
             }
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "editCountForm" && (
+          <EditInstallmentsCountForm
+            installment={
+              modal.payload.kind === "heavy"
+                ? heavyInstallmentsApi.heavyInstallments.find((c) => c.id === modal.payload.id)
+                : installmentsApi.installments.find((c) => c.id === modal.payload.id)
+            }
+            onSave={(count) => {
+              const api = modal.payload.kind === "heavy" ? heavyInstallmentsApi : installmentsApi;
+              api.editInstallmentsCount(modal.payload.id, count);
+            }}
             onClose={closeModal}
           />
         )}

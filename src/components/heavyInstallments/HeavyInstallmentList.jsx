@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import HeavyInstallmentCard from './HeavyInstallmentCard.jsx';
 import { fuzzyMatch, fmt, computeInstallmentStatus } from '../../utils/helpers.js';
 
-export default function HeavyInstallmentList({ heavyInstallments, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenAdd }) {
+export default function HeavyInstallmentList({ heavyInstallments, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenEditCount, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const [overdueOnly, setOverdueOnly] = useState(false);
 
@@ -50,6 +50,7 @@ export default function HeavyInstallmentList({ heavyInstallments, onOpenPaymentF
               onOpenPaymentForm={onOpenPaymentForm}
               onUndoPayment={onUndoPayment}
               onOpenDateForm={onOpenDateForm}
+              onOpenEditCount={onOpenEditCount}
             />
           ))}
         </div>

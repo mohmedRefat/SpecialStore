@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import InstallmentCard from './InstallmentCard.jsx';
 import { fuzzyMatch, fmt, computeInstallmentStatus } from '../../utils/helpers.js';
 
-export default function InstallmentList({ installments, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenAdd }) {
+export default function InstallmentList({ installments, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenEditCount, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const [overdueOnly, setOverdueOnly] = useState(false);
 
@@ -50,6 +50,7 @@ export default function InstallmentList({ installments, onOpenPaymentForm, onUnd
               onOpenPaymentForm={onOpenPaymentForm}
               onUndoPayment={onUndoPayment}
               onOpenDateForm={onOpenDateForm}
+              onOpenEditCount={onOpenEditCount}
             />
           ))}
         </div>
