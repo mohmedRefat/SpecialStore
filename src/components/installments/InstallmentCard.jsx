@@ -10,7 +10,7 @@ export default function InstallmentCard({ c, onOpenPaymentForm, onUndoPayment, o
     ? new Date(c.firstInstallmentDate).toLocaleDateString('ar-EG')
     : 'لسه محدّدش';
   const descLines = (c.desc || '').split('\n').map((l) => l.trim()).filter(Boolean);
-
+//* add comment
   return (
     <div className="inst-card">
       <div className="inst-top">
