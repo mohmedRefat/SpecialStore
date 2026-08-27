@@ -41,3 +41,77 @@ export function computeInstallmentStatus(c) {
   if (Number(c.paid) < expectedDue) return 'متأخر';
   return 'جاري';
 }
+
+export function computePaidAmount(c) {
+  return Math.max(0, Number(c.total) - Number(c.remaining));
+}
+
+export function computeListStatus(c) {
+  if (Number(c.remaining) <= 0) return { label: 'متسوّى', cls: 'success' };
+  if (computeInstallmentStatus(c) === 'متأخر') return { label: 'متأخر', cls: 'danger' };
+  return { label: 'باقي عليه', cls: 'warn' };
+}
+
+export function formatShortDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '—';
+  return `${d.getMonth() + 1}/${String(d.getFullYear()).slice(-2)}`;
+}
+
+export function formatFullDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('ar-EG');
+}
+
+function addPeriod(baseDateStr, index, frequency) {
+  const d = new Date(baseDateStr);
+  if (frequency === 'weekly') {
+    d.setDate(d.getDate() + index * 7);
+  } else {
+    d.setMonth(d.getMonth() + index);
+  }
+  return d.toISOString().slice(0, 10);
+}
+
+/** يولّد جدول الأقساط: تاريخ الاستحقاق، يوم الدفع الفعلي، الحالة، السداد */
+export function generateInstallmentSchedule(c) {
+  const count = Number(c.installments) || 0;
+  const paid = Number(c.paid) || 0;
+  if (!c.firstInstallmentDate || count <= 0) return [];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const paymentDates = Array.isArray(c.paymentDates) ? c.paymentDates : [];
+
+  return Array.from({ length: count }, (_, i) => {
+    const dueDateStr = addPeriod(c.firstInstallmentDate, i, c.frequency || 'monthly');
+    const dueDate = new Date(dueDateStr);
+    dueDate.setHours(0, 0, 0, 0);
+    const isPaid = i < paid;
+    let actualDate = '';
+    if (isPaid) {
+      actualDate = paymentDates[i] || (i === paid - 1 && c.lastPaymentDate ? c.lastPaymentDate : '');
+    }
+    let status = 'جاري التقسيط';
+    if (isPaid) status = 'مسدد';
+    else if (dueDate < today) status = 'متأخر';
+
+    return {
+      index: i + 1,
+      dueDate: dueDateStr,
+      actualDate,
+      status,
+      settled: isPaid,
+    };
+  });
+}
+
+export function addMonthToDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  d.setMonth(d.getMonth() + 1);
+  return d.toISOString().slice(0, 10);
+}

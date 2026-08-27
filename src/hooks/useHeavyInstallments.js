@@ -20,6 +20,8 @@ function mapFromDb(r) {
     firstInstallmentDate: r.first_installment_date || '',
     lastPaymentDate: r.last_payment_date || '',
     frequency: r.frequency || 'monthly',
+    receivedDate: r.received_date || '',
+    paymentDates: Array.isArray(r.payment_dates) ? r.payment_dates : [],
   };
 }
 
@@ -38,6 +40,8 @@ function mapToDb(c) {
     first_installment_date: c.firstInstallmentDate || null,
     last_payment_date: c.lastPaymentDate || null,
     frequency: c.frequency || 'monthly',
+    received_date: c.receivedDate || null,
+    payment_dates: c.paymentDates || [],
   };
 }
 
@@ -75,6 +79,8 @@ export function useHeavyInstallments() {
       firstInstallmentDate: form.date || '',
       lastPaymentDate: '',
       frequency: form.frequency || 'monthly',
+      receivedDate: form.receivedDate || '',
+      paymentDates: [],
     };
     const { error } = await insertItem(newC);
     if (error) showToast('⚠️ فشل الحفظ');
@@ -87,25 +93,23 @@ export function useHeavyInstallments() {
     const newPaid = Number(c.paid) + 1;
     const newRemaining = Math.max(0, Number(c.remaining) - payAmount);
     const today = new Date().toISOString().slice(0, 10);
-
-    if (cloudMode && isCloudConfigured) {
-      const { error: logError } = await supabase.from('installment_payments').insert({
-        id: 'pay' + Date.now() + Math.floor(Math.random() * 1000),
-        account_id: id,
-        account_kind: ACCOUNT_KIND,
-        amount: payAmount,
-        paid_at: today,
-      });
-      if (logError) {
-        showToast('⚠️ فشل حفظ سجل الدفعة');
-        return;
-      }
-    }
-
+    const newPaymentDates = [...(c.paymentDates || []), today];
     const { error } = await updateItem(
       id,
-      { paid: newPaid, remaining: newRemaining, lastPaymentDate: today },
-      { paid: newPaid, remaining: newRemaining, last_payment_date: today }
+      {
+        paid: newPaid,
+        remaining: newRemaining,
+        lastPaymentDate: today,
+        lastPaymentAmount: payAmount,
+        paymentDates: newPaymentDates,
+      },
+      {
+        paid: newPaid,
+        remaining: newRemaining,
+        last_payment_date: today,
+        last_payment_amount: payAmount,
+        payment_dates: newPaymentDates,
+      }
     );
     if (error) {
       showToast('⚠️ فشل الحفظ');
@@ -151,11 +155,12 @@ export function useHeavyInstallments() {
 
     const newPaid = Number(c.paid) - 1;
     const newRemaining = Number(c.remaining) + restoreAmount;
-
+    const newPaymentDates = [...(c.paymentDates || [])];
+    newPaymentDates.pop();
     const { error } = await updateItem(
       id,
-      { paid: newPaid, remaining: newRemaining, lastPaymentDate: newLastPaymentDate },
-      { paid: newPaid, remaining: newRemaining, last_payment_date: newLastPaymentDate || null }
+      { paid: newPaid, remaining: newRemaining, paymentDates: newPaymentDates },
+      { paid: newPaid, remaining: newRemaining, payment_dates: newPaymentDates }
     );
     if (error) {
       showToast('⚠️ فشل التراجع');

@@ -209,7 +209,7 @@ export default function App() {
             )}
             {activeTab === "installments" && (
               <InstallmentList
-                installments={installmentsApi.installments}
+                items={installmentsApi.installments}
                 onOpenPaymentForm={(id) =>
                   setModal({ type: "paymentForm", payload: { id, kind: "installments" } })
                 }
@@ -221,11 +221,12 @@ export default function App() {
                   setModal({ type: "editCountForm", payload: { id, kind: "installments" } })
                 }
                 onOpenAdd={() => setModal({ type: "installmentForm" })}
+                onDelete={installmentsApi.deleteInstallment}
               />
             )}
             {activeTab === "heavyInstallments" && (
               <HeavyInstallmentList
-                heavyInstallments={heavyInstallmentsApi.heavyInstallments}
+                items={heavyInstallmentsApi.heavyInstallments}
                 onOpenPaymentForm={(id) =>
                   setModal({ type: "paymentForm", payload: { id, kind: "heavy" } })
                 }
@@ -237,6 +238,7 @@ export default function App() {
                   setModal({ type: "editCountForm", payload: { id, kind: "heavy" } })
                 }
                 onOpenAdd={() => setModal({ type: "heavyInstallmentForm" })}
+                onDelete={heavyInstallmentsApi.deleteHeavyInstallment}
               />
             )}
           </>
