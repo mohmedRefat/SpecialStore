@@ -1,6 +1,9 @@
 import { useSupabaseTable } from './useSupabaseTable.js';
 import { SEED } from '../data/seedData.js';
 import { useToast } from '../context/ToastContext.jsx';
+import { supabase, isCloudConfigured } from '../lib/supabaseClient.js';
+
+const ACCOUNT_KIND = 'heavy';
 
 function mapFromDb(r) {
   return {
@@ -16,7 +19,6 @@ function mapFromDb(r) {
     remaining: r.remaining,
     firstInstallmentDate: r.first_installment_date || '',
     lastPaymentDate: r.last_payment_date || '',
-    lastPaymentAmount: r.last_payment_amount ?? null,
     frequency: r.frequency || 'monthly',
     receivedDate: r.received_date || '',
     paymentDates: Array.isArray(r.payment_dates) ? r.payment_dates : [],
@@ -37,14 +39,12 @@ function mapToDb(c) {
     remaining: c.remaining,
     first_installment_date: c.firstInstallmentDate || null,
     last_payment_date: c.lastPaymentDate || null,
-    last_payment_amount: c.lastPaymentAmount ?? null,
     frequency: c.frequency || 'monthly',
     received_date: c.receivedDate || null,
     payment_dates: c.paymentDates || [],
   };
 }
 
-// نفس بالظبط منطق useInstallments.js، بس على جدول heavy_installments المنفصل
 export function useHeavyInstallments() {
   const showToast = useToast();
   const {
@@ -78,7 +78,6 @@ export function useHeavyInstallments() {
       monthly,
       firstInstallmentDate: form.date || '',
       lastPaymentDate: '',
-      lastPaymentAmount: null,
       frequency: form.frequency || 'monthly',
       receivedDate: form.receivedDate || '',
       paymentDates: [],
@@ -87,7 +86,6 @@ export function useHeavyInstallments() {
     if (error) showToast('⚠️ فشل الحفظ');
   };
 
-  // amount: المبلغ الفعلي اللي دفعه دلوقتي — ممكن يكون مختلف عن "القسط" المحسوب
   const logPayment = async (id, amount) => {
     const c = heavyInstallments.find((x) => x.id === id);
     if (!c) return;
@@ -123,9 +121,38 @@ export function useHeavyInstallments() {
   const undoPayment = async (id) => {
     const c = heavyInstallments.find((x) => x.id === id);
     if (!c || c.paid <= 0) return;
-    const restoreAmount = c.lastPaymentAmount !== undefined && c.lastPaymentAmount !== null
-      ? Number(c.lastPaymentAmount)
-      : Number(c.monthly);
+
+    let restoreAmount = Number(c.monthly);
+    let newLastPaymentDate = c.lastPaymentDate;
+
+    if (cloudMode && isCloudConfigured) {
+      const { data: rows, error: fetchErr } = await supabase
+        .from('installment_payments')
+        .select('*')
+        .eq('account_id', id)
+        .eq('account_kind', ACCOUNT_KIND)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (fetchErr) {
+        showToast('⚠️ فشل التراجع');
+        return;
+      }
+      if (rows && rows.length > 0) {
+        const last = rows[0];
+        restoreAmount = Number(last.amount);
+        await supabase.from('installment_payments').delete().eq('id', last.id);
+
+        const { data: prevRows } = await supabase
+          .from('installment_payments')
+          .select('*')
+          .eq('account_id', id)
+          .eq('account_kind', ACCOUNT_KIND)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        newLastPaymentDate = prevRows && prevRows.length > 0 ? prevRows[0].paid_at : '';
+      }
+    }
+
     const newPaid = Number(c.paid) - 1;
     const newRemaining = Number(c.remaining) + restoreAmount;
     const newPaymentDates = [...(c.paymentDates || [])];
@@ -140,6 +167,24 @@ export function useHeavyInstallments() {
       return;
     }
     showToast('↩️ اتلغت آخر دفعة');
+  };
+
+  const editInstallmentsCount = async (id, newCount) => {
+    const c = heavyInstallments.find((x) => x.id === id);
+    if (!c) return;
+    const count = Math.max(1, Number(newCount) || 1);
+    const remainingAfterDown = Number(c.total) - Number(c.down);
+    const newMonthly = Math.round(remainingAfterDown / count);
+    const { error } = await updateItem(
+      id,
+      { installments: count, monthly: newMonthly },
+      { installments: count, monthly: newMonthly }
+    );
+    if (error) {
+      showToast('⚠️ فشل التعديل');
+      return;
+    }
+    showToast('✅ اتعدّل عدد الأقساط');
   };
 
   const setFirstInstallmentDate = async (id, date) => {
@@ -165,6 +210,7 @@ export function useHeavyInstallments() {
     addHeavyInstallment,
     logPayment,
     undoPayment,
+    editInstallmentsCount,
     setFirstInstallmentDate,
     deleteHeavyInstallment,
   };

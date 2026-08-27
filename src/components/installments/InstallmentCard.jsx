@@ -1,6 +1,6 @@
 import { fmt, computeInstallmentStatus } from '../../utils/helpers.js';
 
-export default function InstallmentCard({ c, onOpenPaymentForm, onUndoPayment, onOpenDateForm }) {
+export default function InstallmentCard({ c, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenEditCount }) {
   const pct = c.installments > 0 ? Math.min(100, Math.round((c.paid / c.installments) * 100)) : 0;
   const status = computeInstallmentStatus(c);
   const cls = status === 'متأخر' ? 'danger' : status === 'مسدد' ? 'success' : 'gold';
@@ -10,7 +10,7 @@ export default function InstallmentCard({ c, onOpenPaymentForm, onUndoPayment, o
     ? new Date(c.firstInstallmentDate).toLocaleDateString('ar-EG')
     : 'لسه محدّدش';
   const descLines = (c.desc || '').split('\n').map((l) => l.trim()).filter(Boolean);
-
+//* add comment
   return (
     <div className="inst-card">
       <div className="inst-top">
@@ -55,6 +55,7 @@ export default function InstallmentCard({ c, onOpenPaymentForm, onUndoPayment, o
       </div>
       <div className="inst-actions">
         <button className="btn ghost" onClick={() => onOpenDateForm(c.id)}>📅 تاريخ البداية</button>
+        <button className="btn ghost" onClick={() => onOpenEditCount(c.id)}>✏️ عدد الأقساط</button>
         {c.paid > 0 && (
           <button className="btn ghost" onClick={() => onUndoPayment(c.id)}>↩️ تراجع</button>
         )}

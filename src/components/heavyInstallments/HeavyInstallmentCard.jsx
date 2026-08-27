@@ -1,6 +1,6 @@
 import { fmt, computeInstallmentStatus } from '../../utils/helpers.js';
 
-export default function HeavyInstallmentCard({ c, onOpenPaymentForm, onUndoPayment, onOpenDateForm }) {
+export default function HeavyInstallmentCard({ c, onOpenPaymentForm, onUndoPayment, onOpenDateForm, onOpenEditCount }) {
   const pct = c.installments > 0 ? Math.min(100, Math.round((c.paid / c.installments) * 100)) : 0;
   const status = computeInstallmentStatus(c);
   const cls = status === 'متأخر' ? 'danger' : status === 'مسدد' ? 'success' : 'gold';
@@ -55,6 +55,7 @@ export default function HeavyInstallmentCard({ c, onOpenPaymentForm, onUndoPayme
       </div>
       <div className="inst-actions">
         <button className="btn ghost" onClick={() => onOpenDateForm(c.id)}>📅 تاريخ البداية</button>
+        <button className="btn ghost" onClick={() => onOpenEditCount(c.id)}>✏️ عدد الأقساط</button>
         {c.paid > 0 && (
           <button className="btn ghost" onClick={() => onUndoPayment(c.id)}>↩️ تراجع</button>
         )}
