@@ -1,0 +1,177 @@
+/* ============ تقسيط — جدول + تفاصيل ============ */
+
+.stat.clickable {
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.stat.clickable:hover {
+  box-shadow: var(--shadow-md);
+}
+.stat.clickable:active {
+  transform: scale(0.98);
+}
+.stat.active {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.pill.warn {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.inst-back-btn {
+  width: auto !important;
+  padding: 9px 18px !important;
+  margin-bottom: 14px;
+  flex: none !important;
+}
+
+.inst-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.inst-product-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.inst-product-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.inst-product-line {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.inst-product-line.muted {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.inst-received {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.inst-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.inst-detail-meta b {
+  color: var(--ink);
+}
+
+.inst-list-sub {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-top: 3px;
+}
+
+.inst-schedule-table {
+  min-width: 420px;
+}
+
+.inst-row-late {
+  background: rgba(161, 77, 67, 0.04);
+}
+
+.inst-settled {
+  font-size: 18px;
+}
+
+.inst-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--success-soft);
+  color: var(--success);
+  font-weight: 800;
+}
+
+/* ============ فورم إنشاء عميل ============ */
+
+.inst-form-preview {
+  background: var(--primary-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.inst-form-preview .label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.inst-form-preview .value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.inst-form-section {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 18px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.inst-form-section:first-of-type {
+  margin-top: 0;
+}
+
+.field textarea {
+  width: 100%;
+  padding: 11.5px 13px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--line);
+  font-size: 15px;
+  font-family: 'Cairo', sans-serif;
+  background: var(--surface-alt);
+  color: var(--ink);
+  resize: vertical;
+  min-height: 72px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+  background: var(--surface);
+}

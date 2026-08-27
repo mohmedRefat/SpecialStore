@@ -18,6 +18,8 @@ function mapFromDb(r) {
     lastPaymentDate: r.last_payment_date || '',
     lastPaymentAmount: r.last_payment_amount ?? null,
     frequency: r.frequency || 'monthly',
+    receivedDate: r.received_date || '',
+    paymentDates: Array.isArray(r.payment_dates) ? r.payment_dates : [],
   };
 }
 
@@ -37,6 +39,8 @@ function mapToDb(c) {
     last_payment_date: c.lastPaymentDate || null,
     last_payment_amount: c.lastPaymentAmount ?? null,
     frequency: c.frequency || 'monthly',
+    received_date: c.receivedDate || null,
+    payment_dates: c.paymentDates || [],
   };
 }
 
@@ -76,6 +80,8 @@ export function useHeavyInstallments() {
       lastPaymentDate: '',
       lastPaymentAmount: null,
       frequency: form.frequency || 'monthly',
+      receivedDate: form.receivedDate || '',
+      paymentDates: [],
     };
     const { error } = await insertItem(newC);
     if (error) showToast('⚠️ فشل الحفظ');
@@ -89,10 +95,23 @@ export function useHeavyInstallments() {
     const newPaid = Number(c.paid) + 1;
     const newRemaining = Math.max(0, Number(c.remaining) - payAmount);
     const today = new Date().toISOString().slice(0, 10);
+    const newPaymentDates = [...(c.paymentDates || []), today];
     const { error } = await updateItem(
       id,
-      { paid: newPaid, remaining: newRemaining, lastPaymentDate: today, lastPaymentAmount: payAmount },
-      { paid: newPaid, remaining: newRemaining, last_payment_date: today, last_payment_amount: payAmount }
+      {
+        paid: newPaid,
+        remaining: newRemaining,
+        lastPaymentDate: today,
+        lastPaymentAmount: payAmount,
+        paymentDates: newPaymentDates,
+      },
+      {
+        paid: newPaid,
+        remaining: newRemaining,
+        last_payment_date: today,
+        last_payment_amount: payAmount,
+        payment_dates: newPaymentDates,
+      }
     );
     if (error) {
       showToast('⚠️ فشل الحفظ');
@@ -109,10 +128,12 @@ export function useHeavyInstallments() {
       : Number(c.monthly);
     const newPaid = Number(c.paid) - 1;
     const newRemaining = Number(c.remaining) + restoreAmount;
+    const newPaymentDates = [...(c.paymentDates || [])];
+    newPaymentDates.pop();
     const { error } = await updateItem(
       id,
-      { paid: newPaid, remaining: newRemaining },
-      { paid: newPaid, remaining: newRemaining }
+      { paid: newPaid, remaining: newRemaining, paymentDates: newPaymentDates },
+      { paid: newPaid, remaining: newRemaining, payment_dates: newPaymentDates }
     );
     if (error) {
       showToast('⚠️ فشل التراجع');
