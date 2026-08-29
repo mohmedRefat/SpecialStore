@@ -193,9 +193,8 @@ export default function App() {
                 receipts={receiptsApi.receipts}
                 onOpenAddAccount={() => setModal({ type: "accountForm" })}
                 onOpenAddItem={(accountId) => setModal({ type: "accountItemForm", payload: accountId })}
-                onOpenReceipt={(accountId, name) =>
-                  setModal({ type: "receiptForm", payload: { accountId, name } })
-                }
+
+                onAddReceipt={receiptsApi.addReceipt}
                 onDeleteAccount={accountsApi.deleteAccount}
                 onDeleteItem={accountsApi.deleteAccountItem}
               />
