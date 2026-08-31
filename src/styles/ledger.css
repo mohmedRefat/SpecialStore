@@ -20,20 +20,28 @@
   top:0;
   background:var(--bg);
   color:var(--ink-soft);
-  font-size:12.5px;
+  font-size:14px;
   font-weight:700;
   text-align:center;
-  padding:12px 10px;
-  border-bottom:1.5px solid var(--line);
+  padding:13px 12px;
+  border-bottom:2px solid var(--line);
+  border-inline-start:1px solid var(--line);
   white-space:nowrap;
+}
+.ledger-table thead th:first-child{
+  border-inline-start:none;
 }
 
 .ledger-table tbody td{
-  padding:12px 10px;
+  padding:13px 12px;
   text-align:center;
-  font-size:14px;
+  font-size:15.5px;
   border-bottom:1px solid var(--line);
+  border-inline-start:1px solid var(--line);
   white-space:nowrap;
+}
+.ledger-table tbody td:first-child{
+  border-inline-start:none;
 }
 
 .ledger-table tbody tr:last-child td{
@@ -93,10 +101,10 @@
   font-family:'Tajawal',sans-serif;
 }
 
-/* موبايل: خط وحشو أصغر شوية عشان الجدول ياخد مساحة أقل */
+/* موبايل: خط وحشو أصغر شوية عشان الجدول ياخد مساحة أقل، بس لسه واضح */
 @media(max-width:480px){
-  .ledger-table thead th{ font-size:11.5px; padding:10px 8px; }
-  .ledger-table tbody td{ font-size:13px; padding:10px 8px; }
+  .ledger-table thead th{ font-size:12.5px; padding:11px 9px; }
+  .ledger-table tbody td{ font-size:14px; padding:11px 9px; }
 }
 
 /* أزرار الإجراءات جوه خلية الجدول (زوّد/نقّص/حذف) */

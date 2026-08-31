@@ -9,7 +9,7 @@ export default function AccountsPage({
   itemsFor,
   receipts,
   onOpenAddAccount,
-  onOpenAddItem,
+  onAddItem,
   onAddReceipt,
   onDeleteAccount,
   onDeleteItem,
@@ -20,6 +20,13 @@ export default function AccountsPage({
   const [receiptAmount, setReceiptAmount] = useState('');
   const [receiptDesc, setReceiptDesc] = useState('');
   const [receiptDate, setReceiptDate] = useState(new Date().toISOString().slice(0, 10));
+
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [itemForm, setItemForm] = useState({
+    product: '', sizeOrAmp: '', origin: '', price: '', qty: 1,
+    date: new Date().toISOString().slice(0, 10),
+  });
+  const setItemField = (k) => (e) => setItemForm({ ...itemForm, [k]: e.target.value });
 
   const paidFor = (accountId) =>
     receipts.filter((r) => r.accountId === accountId).reduce((s, r) => s + (Number(r.amount) || 0), 0);
@@ -45,6 +52,8 @@ export default function AccountsPage({
     setReceiptAmount('');
     setReceiptDesc('');
     setReceiptDate(new Date().toISOString().slice(0, 10));
+    setShowItemForm(false);
+    setItemForm({ product: '', sizeOrAmp: '', origin: '', price: '', qty: 1, date: new Date().toISOString().slice(0, 10) });
   };
 
   const saveReceipt = () => {
@@ -61,6 +70,13 @@ export default function AccountsPage({
     setShowReceiptForm(false);
     setReceiptAmount('');
     setReceiptDesc('');
+  };
+
+  const saveItem = () => {
+    if (!itemForm.product.trim()) return;
+    onAddItem(selected.id, itemForm);
+    setShowItemForm(false);
+    setItemForm({ product: '', sizeOrAmp: '', origin: '', price: '', qty: 1, date: new Date().toISOString().slice(0, 10) });
   };
 
   /* ============ فتح دفتر عميل واحد ============ */
@@ -90,11 +106,48 @@ export default function AccountsPage({
         />
 
         <div className="item-actions" style={{ marginBottom: 12 }}>
-          <button className="btn primary" onClick={() => onOpenAddItem(selected.id)}>➕ إضافة حركة</button>
+          <button className="btn primary" onClick={() => setShowItemForm((v) => !v)}>➕ إضافة حركة</button>
           <button className="btn ghost" onClick={() => setShowReceiptForm((v) => !v)}>
             💵 استلام دفعة
           </button>
         </div>
+
+        {showItemForm && (
+          <div className="item-card" style={{ marginBottom: 16 }}>
+            <div className="field">
+              <label>المنتج</label>
+              <input value={itemForm.product} onChange={setItemField('product')} autoFocus />
+            </div>
+            <div className="field-row">
+              <div className="field">
+                <label>المقاس/الأمبير</label>
+                <input value={itemForm.sizeOrAmp} onChange={setItemField('sizeOrAmp')} />
+              </div>
+              <div className="field">
+                <label>المنشأ</label>
+                <input value={itemForm.origin} onChange={setItemField('origin')} />
+              </div>
+            </div>
+            <div className="field-row">
+              <div className="field">
+                <label>السعر</label>
+                <input type="number" value={itemForm.price} onChange={setItemField('price')} />
+              </div>
+              <div className="field">
+                <label>الكمية</label>
+                <input type="number" value={itemForm.qty} onChange={setItemField('qty')} />
+              </div>
+            </div>
+            <div className="field">
+              <label>التاريخ</label>
+              <input type="date" value={itemForm.date} onChange={setItemField('date')} />
+            </div>
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={() => setShowItemForm(false)}>إلغاء</button>
+              <button className="btn primary" onClick={saveItem}>حفظ</button>
+            </div>
+          </div>
+        )}
 
         {showReceiptForm && (
           <div className="item-card" style={{ marginBottom: 16 }}>

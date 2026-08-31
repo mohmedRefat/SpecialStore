@@ -42,6 +42,8 @@ import { useToast } from "./context/ToastContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { isCloudConfigured } from "./lib/supabaseClient.js";
 import LoginForm from "./components/auth/LoginForm.jsx";
+import BatterySalesList from "./components/sales/BatterySalesList.jsx";
+import BatterySaleForm from "./components/sales/BatterySaleForm.jsx";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("tires");
@@ -179,6 +181,14 @@ export default function App() {
                 onOpenPaymentForm={(id) => setModal({ type: "salePaymentForm", payload: id })}
               />
             )}
+            {activeTab === "batterySales" && (
+              <BatterySalesList
+                sales={salesApi.sales}
+                batteries={batteriesApi.batteries}
+                onDelete={salesApi.deleteSale}
+                onOpenAdd={() => setModal({ type: "batterySaleForm" })}
+              />
+            )}
             {activeTab === "receipts" && (
               <ReceiptList
                 receipts={receiptsApi.receipts}
@@ -193,7 +203,6 @@ export default function App() {
                 receipts={receiptsApi.receipts}
                 onOpenAddAccount={() => setModal({ type: "accountForm" })}
                 onOpenAddItem={(accountId) => setModal({ type: "accountItemForm", payload: accountId })}
-
                 onAddReceipt={receiptsApi.addReceipt}
                 onDeleteAccount={accountsApi.deleteAccount}
                 onDeleteItem={accountsApi.deleteAccountItem}
@@ -263,6 +272,13 @@ export default function App() {
             batteries={batteriesApi.batteries}
             hardware={hardwareApi.hardware}
             loaders={loadersApi.loaders}
+            onSave={salesApi.addSale}
+            onClose={closeModal}
+          />
+        )}
+        {modal?.type === "batterySaleForm" && (
+          <BatterySaleForm
+            batteries={batteriesApi.batteries}
             onSave={salesApi.addSale}
             onClose={closeModal}
           />
