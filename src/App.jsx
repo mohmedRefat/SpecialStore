@@ -202,10 +202,11 @@ export default function App() {
                 itemsFor={accountsApi.itemsFor}
                 receipts={receiptsApi.receipts}
                 onOpenAddAccount={() => setModal({ type: "accountForm" })}
-                onOpenAddItem={(accountId) => setModal({ type: "accountItemForm", payload: accountId })}
+                onAddItem={accountsApi.addAccountItem}
                 onAddReceipt={receiptsApi.addReceipt}
                 onDeleteAccount={accountsApi.deleteAccount}
                 onDeleteItem={accountsApi.deleteAccountItem}
+                onDeleteReceipt={receiptsApi.deleteReceipt}
               />
             )}
             {activeTab === "imports" && (

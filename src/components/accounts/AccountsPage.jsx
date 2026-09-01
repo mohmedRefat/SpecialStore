@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import StatStrip from '../layout/StatStrip.jsx';
 import SearchBar from '../layout/SearchBar.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
 import { fmt, fuzzyMatch } from '../../utils/helpers.js';
 import '../../styles/ledger.css';
 
@@ -13,7 +14,9 @@ export default function AccountsPage({
   onAddReceipt,
   onDeleteAccount,
   onDeleteItem,
+  onDeleteReceipt,
 }) {
+  const showToast = useToast();
   const [selectedId, setSelectedId] = useState(null);
   const [query, setQuery] = useState('');
   const [showReceiptForm, setShowReceiptForm] = useState(false);
@@ -58,7 +61,10 @@ export default function AccountsPage({
 
   const saveReceipt = () => {
     const amount = Number(receiptAmount) || 0;
-    if (amount <= 0) return;
+    if (amount <= 0) {
+      showToast('⚠️ اكتب مبلغ أكبر من صفر');
+      return;
+    }
     onAddReceipt({
       name: selected.name,
       phone: '',
@@ -73,7 +79,10 @@ export default function AccountsPage({
   };
 
   const saveItem = () => {
-    if (!itemForm.product.trim()) return;
+    if (!itemForm.product.trim()) {
+      showToast('⚠️ اكتب اسم المنتج على الأقل');
+      return;
+    }
     onAddItem(selected.id, itemForm);
     setShowItemForm(false);
     setItemForm({ product: '', sizeOrAmp: '', origin: '', price: '', qty: 1, date: new Date().toISOString().slice(0, 10) });
@@ -84,6 +93,9 @@ export default function AccountsPage({
     const items = itemsFor(selected.id).sort((a, b) => (a.id < b.id ? 1 : -1));
     const hasCredit = selected.balance < 0; // دفع أكتر من إجمالي مشترياته
     const balanceAmount = Math.abs(selected.balance);
+    const receiptsForAccount = receipts
+      .filter((r) => r.accountId === selected.id)
+      .sort((a, b) => (a.id < b.id ? 1 : -1));
 
     return (
       <>
@@ -224,6 +236,45 @@ export default function AccountsPage({
                 <tr>
                   <td colSpan={6} className="ledger-foot-label">الإجمالي الكلي</td>
                   <td className="num ledger-total">{fmt(selected.total)}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+
+        <div className="section-title" style={{ marginTop: 20 }}>💵 سجل الدفعات</div>
+        {receiptsForAccount.length === 0 ? (
+          <div className="empty">مفيش دفعات اتسجلت لسه</div>
+        ) : (
+          <div className="ledger-wrap">
+            <table className="ledger-table">
+              <thead>
+                <tr>
+                  <th>التاريخ</th>
+                  <th>البيان</th>
+                  <th>المبلغ</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {receiptsForAccount.map((r) => (
+                  <tr key={r.id}>
+                    <td className="ledger-date">{new Date(r.receivedAt || r.date).toLocaleDateString('ar-EG')}</td>
+                    <td className="ledger-strong sticky-col">{r.desc || '—'}</td>
+                    <td className="num ledger-total" style={{ color: 'var(--success)' }}>{fmt(r.amount)}</td>
+                    <td>
+                      {onDeleteReceipt && (
+                        <button className="mini-btn" onClick={() => onDeleteReceipt(r.id)}>🗑️</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={2} className="ledger-foot-label">إجمالي المدفوع</td>
+                  <td className="num ledger-total" style={{ color: 'var(--success)' }}>{fmt(selected.paid)}</td>
                   <td></td>
                 </tr>
               </tfoot>
