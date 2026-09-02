@@ -36,6 +36,17 @@ export default function BatterySalesList({ sales, batteries, onOpenAdd, onDelete
     return b ? b.qty : null;
   };
 
+  // بيدوّر على الأمبير من المخزون الحالي؛ لو الصنف اتمسح من المخزون بعدين،
+  // بيحاول يطلعه من اسم الصنف المحفوظ وقت البيع (لو كان متسجل فيه)
+  const ampFor = (sale) => {
+    if (sale.itemId) {
+      const b = batteries.find((x) => x.id === sale.itemId);
+      if (b && b.amp) return b.amp;
+    }
+    const match = String(sale.itemName || '').match(/(\d+)\s*أمبير/);
+    return match ? match[1] : null;
+  };
+
   return (
     <>
       <StatStrip
@@ -74,6 +85,7 @@ export default function BatterySalesList({ sales, batteries, onOpenAdd, onDelete
                 <th>التاريخ</th>
                 <th>العميل</th>
                 <th>البطارية</th>
+                <th>الأمبير</th>
                 <th>الكمية المباعة</th>
                 <th>متبقي بالمخزن</th>
                 <th>سعر البيع</th>
@@ -87,6 +99,7 @@ export default function BatterySalesList({ sales, batteries, onOpenAdd, onDelete
               {filtered.map((s) => {
                 const rem = remainingFor(s);
                 const stockQty = stockQtyFor(s);
+                const amp = ampFor(s);
                 return (
                   <tr key={s.id}>
                     <td className="ledger-date">{new Date(s.soldAt).toLocaleDateString('ar-EG')}</td>
@@ -95,6 +108,7 @@ export default function BatterySalesList({ sales, batteries, onOpenAdd, onDelete
                       {s.customerPhone && <div className="inst-list-sub">{s.customerPhone}</div>}
                     </td>
                     <td>{s.itemName}</td>
+                    <td className="num">{amp ? `${amp} أمبير` : '—'}</td>
                     <td className="num">{s.qty}</td>
                     <td className="num" style={{ color: stockQty !== null && stockQty <= 1 ? 'var(--danger)' : undefined }}>
                       {stockQty !== null ? stockQty : '—'}
