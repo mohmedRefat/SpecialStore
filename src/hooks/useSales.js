@@ -97,7 +97,9 @@ export function useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, curr
         showToast('⚠️ الكمية المتاحة في المخزون مش كفاية');
         return;
       }
-      itemName = stockItem.brand || stockItem.name;
+      itemName = stockItem.brand
+        ? `${stockItem.brand}${stockItem.amp ? ' - ' + stockItem.amp + ' أمبير' : ''}${stockItem.size ? ' - ' + stockItem.size : ''}`
+        : stockItem.name;
     } else {
       itemName = (form.manualItemName || '').trim();
       if (!itemName) {
