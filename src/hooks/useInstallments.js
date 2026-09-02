@@ -1,9 +1,6 @@
 import { useSupabaseTable } from './useSupabaseTable.js';
 import { SEED } from '../data/seedData.js';
 import { useToast } from '../context/ToastContext.jsx';
-import { supabase, isCloudConfigured } from '../lib/supabaseClient.js';
-
-const ACCOUNT_KIND = 'regular';
 
 function mapFromDb(r) {
   return {
@@ -19,9 +16,11 @@ function mapFromDb(r) {
     remaining: r.remaining,
     firstInstallmentDate: r.first_installment_date || '',
     lastPaymentDate: r.last_payment_date || '',
+    lastPaymentAmount: r.last_payment_amount ?? null,
     frequency: r.frequency || 'monthly',
     receivedDate: r.received_date || '',
     paymentDates: Array.isArray(r.payment_dates) ? r.payment_dates : [],
+    paymentAmounts: Array.isArray(r.payment_amounts) ? r.payment_amounts : [],
   };
 }
 
@@ -39,9 +38,11 @@ function mapToDb(c) {
     remaining: c.remaining,
     first_installment_date: c.firstInstallmentDate || null,
     last_payment_date: c.lastPaymentDate || null,
+    last_payment_amount: c.lastPaymentAmount ?? null,
     frequency: c.frequency || 'monthly',
     received_date: c.receivedDate || null,
     payment_dates: c.paymentDates || [],
+    payment_amounts: c.paymentAmounts || [],
   };
 }
 
@@ -78,16 +79,19 @@ export function useInstallments() {
       monthly,
       firstInstallmentDate: form.date || '',
       lastPaymentDate: '',
+      lastPaymentAmount: null,
       frequency: form.frequency || 'monthly',
       receivedDate: form.receivedDate || '',
       paymentDates: [],
+      paymentAmounts: [],
     };
     const { error } = await insertItem(newC);
     if (error) showToast('⚠️ فشل الحفظ');
   };
 
-  // كل دفعة بتتسجل كصف منفصل في installment_payments، مش رقم واحد بيتكتب فوق نفسه —
-  // ده اللي بيخلي "تراجع" يشتغل صح حتى لو استخدمته أكتر من مرة ورا بعض
+  // amount: المبلغ الفعلي اللي دفعه دلوقتي — ممكن يكون مختلف عن "القسط" المحسوب.
+  // بنسجّل المبلغ ده في مصفوفة منفصلة عشان "تراجع" يعرف يرجع بالظبط بالمبلغ الصح
+  // حتى لو اتكرر أكتر من مرة ورا بعض على دفعات مختلفة القيمة
   const logPayment = async (id, amount) => {
     const c = installments.find((x) => x.id === id);
     if (!c) return;
@@ -96,6 +100,7 @@ export function useInstallments() {
     const newRemaining = Math.max(0, Number(c.remaining) - payAmount);
     const today = new Date().toISOString().slice(0, 10);
     const newPaymentDates = [...(c.paymentDates || []), today];
+    const newPaymentAmounts = [...(c.paymentAmounts || []), payAmount];
     const { error } = await updateItem(
       id,
       {
@@ -104,6 +109,7 @@ export function useInstallments() {
         lastPaymentDate: today,
         lastPaymentAmount: payAmount,
         paymentDates: newPaymentDates,
+        paymentAmounts: newPaymentAmounts,
       },
       {
         paid: newPaid,
@@ -111,6 +117,7 @@ export function useInstallments() {
         last_payment_date: today,
         last_payment_amount: payAmount,
         payment_dates: newPaymentDates,
+        payment_amounts: newPaymentAmounts,
       }
     );
     if (error) {
@@ -120,51 +127,37 @@ export function useInstallments() {
     showToast('✅ اتسجلت الدفعة');
   };
 
-  // بيدوّر على آخر دفعة فعلية اتسجلت في السجل ويشيلها، ويرجّع مبلغها بالظبط —
-  // مش رقم ثابت مخزّن، فبيفضل شغال صح مهما كررت التراجع
+  // بيرجّع بالظبط مبلغ آخر دفعة فعلية اتسجلت (مش رقم ثابت)، فتقدر تعمل "تراجع"
+  // أكتر من مرة ورا بعض وكل مرة هترجّع المبلغ الصح لنفس الدفعة دي
   const undoPayment = async (id) => {
     const c = installments.find((x) => x.id === id);
     if (!c || c.paid <= 0) return;
-
-    let restoreAmount = Number(c.monthly);
-    let newLastPaymentDate = c.lastPaymentDate;
-
-    if (cloudMode && isCloudConfigured) {
-      const { data: rows, error: fetchErr } = await supabase
-        .from('installment_payments')
-        .select('*')
-        .eq('account_id', id)
-        .eq('account_kind', ACCOUNT_KIND)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      if (fetchErr) {
-        showToast('⚠️ فشل التراجع');
-        return;
-      }
-      if (rows && rows.length > 0) {
-        const last = rows[0];
-        restoreAmount = Number(last.amount);
-        await supabase.from('installment_payments').delete().eq('id', last.id);
-
-        const { data: prevRows } = await supabase
-          .from('installment_payments')
-          .select('*')
-          .eq('account_id', id)
-          .eq('account_kind', ACCOUNT_KIND)
-          .order('created_at', { ascending: false })
-          .limit(1);
-        newLastPaymentDate = prevRows && prevRows.length > 0 ? prevRows[0].paid_at : '';
-      }
-    }
-
+    const amounts = [...(c.paymentAmounts || [])];
+    const dates = [...(c.paymentDates || [])];
+    const restoreAmount = amounts.length > 0 ? Number(amounts.pop()) : Number(c.monthly);
+    dates.pop();
     const newPaid = Number(c.paid) - 1;
     const newRemaining = Number(c.remaining) + restoreAmount;
-    const newPaymentDates = [...(c.paymentDates || [])];
-    newPaymentDates.pop();
+    const newLastAmount = amounts.length > 0 ? amounts[amounts.length - 1] : null;
+    const newLastDate = dates.length > 0 ? dates[dates.length - 1] : '';
     const { error } = await updateItem(
       id,
-      { paid: newPaid, remaining: newRemaining, paymentDates: newPaymentDates },
-      { paid: newPaid, remaining: newRemaining, payment_dates: newPaymentDates }
+      {
+        paid: newPaid,
+        remaining: newRemaining,
+        paymentDates: dates,
+        paymentAmounts: amounts,
+        lastPaymentDate: newLastDate,
+        lastPaymentAmount: newLastAmount,
+      },
+      {
+        paid: newPaid,
+        remaining: newRemaining,
+        payment_dates: dates,
+        payment_amounts: amounts,
+        last_payment_date: newLastDate || null,
+        last_payment_amount: newLastAmount,
+      }
     );
     if (error) {
       showToast('⚠️ فشل التراجع');
@@ -173,7 +166,6 @@ export function useInstallments() {
     showToast('↩️ اتلغت آخر دفعة');
   };
 
-  // للعميل اللي بيدفع بشكل غير منتظم — تقدر تزوّد عدد الأقساط في أي وقت
   const editInstallmentsCount = async (id, newCount) => {
     const c = installments.find((x) => x.id === id);
     if (!c) return;
