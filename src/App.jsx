@@ -44,6 +44,8 @@ import { isCloudConfigured } from "./lib/supabaseClient.js";
 import LoginForm from "./components/auth/LoginForm.jsx";
 import BatterySalesList from "./components/sales/BatterySalesList.jsx";
 import BatterySaleForm from "./components/sales/BatterySaleForm.jsx";
+import { useRetailers } from "./hooks/useRetailers.js";
+import { useRetailerReceipts } from "./hooks/useRetailerReceipts.js";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("tires");
@@ -60,6 +62,8 @@ export default function App() {
   const salesApi = useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, currentUserEmail: user?.email });
   const receiptsApi = useReceipts();
   const accountsApi = useAccounts();
+  const retailersApi = useRetailers();
+  const retailerReceiptsApi = useRetailerReceipts();
   const importsApi = useImports();
 
   const isLoading =
@@ -209,6 +213,19 @@ export default function App() {
                 onDeleteReceipt={receiptsApi.deleteReceipt}
               />
             )}
+            {activeTab === "retailers" && (
+              <AccountsPage
+                accounts={retailersApi.accounts}
+                itemsFor={retailersApi.itemsFor}
+                receipts={retailerReceiptsApi.receipts}
+                onOpenAddAccount={() => setModal({ type: "retailerForm" })}
+                onAddItem={retailersApi.addAccountItem}
+                onAddReceipt={retailerReceiptsApi.addReceipt}
+                onDeleteAccount={retailersApi.deleteAccount}
+                onDeleteItem={retailersApi.deleteAccountItem}
+                onDeleteReceipt={retailerReceiptsApi.deleteReceipt}
+              />
+            )}
             {activeTab === "imports" && (
               <ImportList
                 imports={importsApi.imports}
@@ -311,6 +328,9 @@ export default function App() {
         )}
         {modal?.type === "accountForm" && (
           <AccountForm onSave={accountsApi.addAccount} onClose={closeModal} />
+        )}
+        {modal?.type === "retailerForm" && (
+          <AccountForm onSave={retailersApi.addAccount} onClose={closeModal} />
         )}
         {modal?.type === "accountItemForm" && (
           <AccountItemForm
