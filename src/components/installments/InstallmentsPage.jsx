@@ -20,6 +20,8 @@ export default function InstallmentsPage({
   onUndoPayment,
   onOpenDateForm,
   onDelete,
+  kind, // 'light' (نص نقل) أو 'heavy' (نقل تقيل) — يحدد اتجاه زرار النقل
+  onTransfer, // (customer) => Promise<boolean>
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [query, setQuery] = useState("");
@@ -49,6 +51,16 @@ export default function InstallmentsPage({
       .filter(Boolean);
     const isWeekly = selected.frequency === "weekly";
     const unitLabel = isWeekly ? "أسبوع" : "شهر";
+    const targetLabel = kind === "heavy" ? "نص النقل" : "النقل التقيل";
+
+    const handleTransfer = async () => {
+      const ok = window.confirm(
+        `متأكد إنك عايز تنقل "${selected.name}" لحسابات ${targetLabel}؟\n\nهيتشال من هنا بكل بياناته (المشتريات، الدفعات، الجدول) ويتحط هناك بالظبط.`,
+      );
+      if (!ok) return;
+      const success = await onTransfer(selected);
+      if (success) setSelectedId(null);
+    };
 
     return (
       <>
@@ -122,7 +134,10 @@ export default function InstallmentsPage({
           )}
         </div>
 
-        <div className="item-actions" style={{ marginBottom: 16 }}>
+        <div
+          className="item-actions"
+          style={{ marginBottom: 16, flexWrap: "wrap", gap: 8 }}
+        >
           {computeInstallmentStatus(selected) !== "مسدد" && (
             <button
               className="btn primary"
@@ -145,6 +160,11 @@ export default function InstallmentsPage({
           >
             📅 تاريخ البداية
           </button>
+          {onTransfer && (
+            <button className="btn ghost" onClick={handleTransfer}>
+              🔁 نقل لـ{targetLabel}
+            </button>
+          )}
         </div>
 
         {schedule.length === 0 ? (

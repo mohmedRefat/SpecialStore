@@ -1,6 +1,6 @@
-import { useSupabaseTable } from './useSupabaseTable.js';
-import { SEED } from '../data/seedData.js';
-import { useToast } from '../context/ToastContext.jsx';
+import { useSupabaseTable } from "./useSupabaseTable.js";
+import { SEED } from "../data/seedData.js";
+import { useToast } from "../context/ToastContext.jsx";
 
 function mapFromDb(r) {
   return {
@@ -14,11 +14,11 @@ function mapFromDb(r) {
     monthly: r.monthly,
     paid: r.paid,
     remaining: r.remaining,
-    firstInstallmentDate: r.first_installment_date || '',
-    lastPaymentDate: r.last_payment_date || '',
+    firstInstallmentDate: r.first_installment_date || "",
+    lastPaymentDate: r.last_payment_date || "",
     lastPaymentAmount: r.last_payment_amount ?? null,
-    frequency: r.frequency || 'monthly',
-    receivedDate: r.received_date || '',
+    frequency: r.frequency || "monthly",
+    receivedDate: r.received_date || "",
     paymentDates: Array.isArray(r.payment_dates) ? r.payment_dates : [],
     paymentAmounts: Array.isArray(r.payment_amounts) ? r.payment_amounts : [],
   };
@@ -39,7 +39,7 @@ function mapToDb(c) {
     first_installment_date: c.firstInstallmentDate || null,
     last_payment_date: c.lastPaymentDate || null,
     last_payment_amount: c.lastPaymentAmount ?? null,
-    frequency: c.frequency || 'monthly',
+    frequency: c.frequency || "monthly",
     received_date: c.receivedDate || null,
     payment_dates: c.paymentDates || [],
     payment_amounts: c.paymentAmounts || [],
@@ -56,7 +56,10 @@ export function useInstallments() {
     insertItem,
     updateItem,
     removeItem,
-  } = useSupabaseTable('installments', SEED.installments, { mapFromDb, mapToDb });
+  } = useSupabaseTable("installments", SEED.installments, {
+    mapFromDb,
+    mapToDb,
+  });
 
   const addInstallment = async (form) => {
     const total = Number(form.total) || 0;
@@ -67,7 +70,7 @@ export function useInstallments() {
     const monthly = Math.round(remainingAfterDown / installmentsCount);
     const remaining = remainingAfterDown - paid * monthly;
     const newC = {
-      id: 'c' + Date.now(),
+      id: "c" + Date.now(),
       name: form.name,
       phone: form.phone,
       desc: form.desc,
@@ -77,16 +80,16 @@ export function useInstallments() {
       installments: installmentsCount,
       paid,
       monthly,
-      firstInstallmentDate: form.date || '',
-      lastPaymentDate: '',
+      firstInstallmentDate: form.date || "",
+      lastPaymentDate: "",
       lastPaymentAmount: null,
-      frequency: form.frequency || 'monthly',
-      receivedDate: form.receivedDate || '',
+      frequency: form.frequency || "monthly",
+      receivedDate: form.receivedDate || "",
       paymentDates: [],
       paymentAmounts: [],
     };
     const { error } = await insertItem(newC);
-    if (error) showToast('⚠️ فشل الحفظ');
+    if (error) showToast("⚠️ فشل الحفظ");
   };
 
   // amount: المبلغ الفعلي اللي دفعه دلوقتي — ممكن يكون مختلف عن "القسط" المحسوب.
@@ -95,7 +98,10 @@ export function useInstallments() {
   const logPayment = async (id, amount) => {
     const c = installments.find((x) => x.id === id);
     if (!c) return;
-    const payAmount = amount !== undefined && amount !== null ? Number(amount) : Number(c.monthly);
+    const payAmount =
+      amount !== undefined && amount !== null
+        ? Number(amount)
+        : Number(c.monthly);
     const newPaid = Number(c.paid) + 1;
     const newRemaining = Math.max(0, Number(c.remaining) - payAmount);
     const today = new Date().toISOString().slice(0, 10);
@@ -118,13 +124,13 @@ export function useInstallments() {
         last_payment_amount: payAmount,
         payment_dates: newPaymentDates,
         payment_amounts: newPaymentAmounts,
-      }
+      },
     );
     if (error) {
-      showToast('⚠️ فشل الحفظ');
+      showToast("⚠️ فشل الحفظ");
       return;
     }
-    showToast('✅ اتسجلت الدفعة');
+    showToast("✅ اتسجلت الدفعة");
   };
 
   // بيرجّع بالظبط مبلغ آخر دفعة فعلية اتسجلت (مش رقم ثابت)، فتقدر تعمل "تراجع"
@@ -134,12 +140,14 @@ export function useInstallments() {
     if (!c || c.paid <= 0) return;
     const amounts = [...(c.paymentAmounts || [])];
     const dates = [...(c.paymentDates || [])];
-    const restoreAmount = amounts.length > 0 ? Number(amounts.pop()) : Number(c.monthly);
+    const restoreAmount =
+      amounts.length > 0 ? Number(amounts.pop()) : Number(c.monthly);
     dates.pop();
     const newPaid = Number(c.paid) - 1;
     const newRemaining = Number(c.remaining) + restoreAmount;
-    const newLastAmount = amounts.length > 0 ? amounts[amounts.length - 1] : null;
-    const newLastDate = dates.length > 0 ? dates[dates.length - 1] : '';
+    const newLastAmount =
+      amounts.length > 0 ? amounts[amounts.length - 1] : null;
+    const newLastDate = dates.length > 0 ? dates[dates.length - 1] : "";
     const { error } = await updateItem(
       id,
       {
@@ -157,13 +165,13 @@ export function useInstallments() {
         payment_amounts: amounts,
         last_payment_date: newLastDate || null,
         last_payment_amount: newLastAmount,
-      }
+      },
     );
     if (error) {
-      showToast('⚠️ فشل التراجع');
+      showToast("⚠️ فشل التراجع");
       return;
     }
-    showToast('↩️ اتلغت آخر دفعة');
+    showToast("↩️ اتلغت آخر دفعة");
   };
 
   const editInstallmentsCount = async (id, newCount) => {
@@ -175,28 +183,28 @@ export function useInstallments() {
     const { error } = await updateItem(
       id,
       { installments: count, monthly: newMonthly },
-      { installments: count, monthly: newMonthly }
+      { installments: count, monthly: newMonthly },
     );
     if (error) {
-      showToast('⚠️ فشل التعديل');
+      showToast("⚠️ فشل التعديل");
       return;
     }
-    showToast('✅ اتعدّل عدد الأقساط');
+    showToast("✅ اتعدّل عدد الأقساط");
   };
 
   const setFirstInstallmentDate = async (id, date) => {
     const { error } = await updateItem(
       id,
       { firstInstallmentDate: date },
-      { first_installment_date: date || null }
+      { first_installment_date: date || null },
     );
-    if (error) showToast('⚠️ فشل الحفظ');
+    if (error) showToast("⚠️ فشل الحفظ");
   };
 
   const deleteInstallment = async (id) => {
-    if (!window.confirm('متأكد إنك عايز تمسح العميل ده؟')) return;
+    if (!window.confirm("متأكد إنك عايز تمسح العميل ده؟")) return;
     const { error } = await removeItem(id);
-    if (error) showToast('⚠️ فشل الحذف');
+    if (error) showToast("⚠️ فشل الحذف");
   };
 
   return {
