@@ -13,6 +13,7 @@ import ReceiptList from "./components/receipts/ReceiptList.jsx";
 import ReceiptForm from "./components/receipts/ReceiptForm.jsx";
 import { useReceipts } from "./hooks/useReceipts.js";
 import AccountsPage from "./components/accounts/AccountsPage.jsx";
+import RetailersPage from "./components/accounts/Retailerspage.jsx";
 import AccountForm from "./components/accounts/AccountForm.jsx";
 import AccountItemForm from "./components/accounts/AccountItemForm.jsx";
 import { useAccounts } from "./hooks/useAccounts.js";
@@ -60,13 +61,7 @@ export default function App() {
   const heavyInstallmentsApi = useHeavyInstallments();
   const hardwareApi = useHardware();
   const loadersApi = useLoaders();
-  const salesApi = useSales({
-    tiresApi,
-    batteriesApi,
-    hardwareApi,
-    loadersApi,
-    currentUserEmail: user?.email,
-  });
+  const salesApi = useSales({ tiresApi, batteriesApi, hardwareApi, loadersApi, currentUserEmail: user?.email });
   const receiptsApi = useReceipts();
   const accountsApi = useAccounts();
   const retailersApi = useRetailers();
@@ -190,9 +185,7 @@ export default function App() {
                 sales={salesApi.sales}
                 onDelete={salesApi.deleteSale}
                 onOpenAdd={() => setModal({ type: "salesForm" })}
-                onOpenPaymentForm={(id) =>
-                  setModal({ type: "salePaymentForm", payload: id })
-                }
+                onOpenPaymentForm={(id) => setModal({ type: "salePaymentForm", payload: id })}
               />
             )}
             {activeTab === "batterySales" && (
@@ -224,7 +217,7 @@ export default function App() {
               />
             )}
             {activeTab === "retailers" && (
-              <AccountsPage
+              <RetailersPage
                 accounts={retailersApi.accounts}
                 itemsFor={retailersApi.itemsFor}
                 receipts={retailerReceiptsApi.receipts}
@@ -247,54 +240,38 @@ export default function App() {
               <InstallmentList
                 items={installmentsApi.installments}
                 onOpenPaymentForm={(id) =>
-                  setModal({
-                    type: "paymentForm",
-                    payload: { id, kind: "installments" },
-                  })
+                  setModal({ type: "paymentForm", payload: { id, kind: "installments" } })
                 }
                 onUndoPayment={installmentsApi.undoPayment}
                 onOpenDateForm={(id) =>
                   setModal({ type: "installmentDateForm", payload: id })
                 }
                 onOpenEditCount={(id) =>
-                  setModal({
-                    type: "editCountForm",
-                    payload: { id, kind: "installments" },
-                  })
+                  setModal({ type: "editCountForm", payload: { id, kind: "installments" } })
                 }
                 onOpenAdd={() => setModal({ type: "installmentForm" })}
                 onDelete={installmentsApi.deleteInstallment}
                 kind="light"
-                onTransfer={(customer) =>
-                  transferApi.moveInstallment(customer, "light", "heavy")
-                }
+                onTransfer={(customer) => transferApi.moveInstallment(customer, "light", "heavy")}
               />
             )}
             {activeTab === "heavyInstallments" && (
               <HeavyInstallmentList
                 items={heavyInstallmentsApi.heavyInstallments}
                 onOpenPaymentForm={(id) =>
-                  setModal({
-                    type: "paymentForm",
-                    payload: { id, kind: "heavy" },
-                  })
+                  setModal({ type: "paymentForm", payload: { id, kind: "heavy" } })
                 }
                 onUndoPayment={heavyInstallmentsApi.undoPayment}
                 onOpenDateForm={(id) =>
                   setModal({ type: "heavyInstallmentDateForm", payload: id })
                 }
                 onOpenEditCount={(id) =>
-                  setModal({
-                    type: "editCountForm",
-                    payload: { id, kind: "heavy" },
-                  })
+                  setModal({ type: "editCountForm", payload: { id, kind: "heavy" } })
                 }
                 onOpenAdd={() => setModal({ type: "heavyInstallmentForm" })}
                 onDelete={heavyInstallmentsApi.deleteHeavyInstallment}
                 kind="heavy"
-                onTransfer={(customer) =>
-                  transferApi.moveInstallment(customer, "heavy", "light")
-                }
+                onTransfer={(customer) => transferApi.moveInstallment(customer, "heavy", "light")}
               />
             )}
           </>
@@ -409,18 +386,11 @@ export default function App() {
           <EditInstallmentsCountForm
             installment={
               modal.payload.kind === "heavy"
-                ? heavyInstallmentsApi.heavyInstallments.find(
-                    (c) => c.id === modal.payload.id,
-                  )
-                : installmentsApi.installments.find(
-                    (c) => c.id === modal.payload.id,
-                  )
+                ? heavyInstallmentsApi.heavyInstallments.find((c) => c.id === modal.payload.id)
+                : installmentsApi.installments.find((c) => c.id === modal.payload.id)
             }
             onSave={(count) => {
-              const api =
-                modal.payload.kind === "heavy"
-                  ? heavyInstallmentsApi
-                  : installmentsApi;
+              const api = modal.payload.kind === "heavy" ? heavyInstallmentsApi : installmentsApi;
               api.editInstallmentsCount(modal.payload.id, count);
             }}
             onClose={closeModal}
@@ -430,12 +400,8 @@ export default function App() {
           <PaymentAmountForm
             customer={
               modal.payload.kind === "heavy"
-                ? heavyInstallmentsApi.heavyInstallments.find(
-                    (c) => c.id === modal.payload.id,
-                  )
-                : installmentsApi.installments.find(
-                    (c) => c.id === modal.payload.id,
-                  )
+                ? heavyInstallmentsApi.heavyInstallments.find((c) => c.id === modal.payload.id)
+                : installmentsApi.installments.find((c) => c.id === modal.payload.id)
             }
             onSave={(amount) =>
               modal.payload.kind === "heavy"
