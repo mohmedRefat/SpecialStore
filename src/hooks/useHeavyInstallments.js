@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 function mapFromDb(r) {
   return {
     id: r.id,
+    createdAt: r.created_at || '',
     name: r.name,
     phone: r.phone,
     desc: r.description,
@@ -27,6 +28,7 @@ function mapFromDb(r) {
 function mapToDb(c) {
   return {
     id: c.id,
+    created_at: c.createdAt || undefined,
     name: c.name,
     phone: c.phone,
     description: c.desc,
@@ -68,6 +70,7 @@ export function useHeavyInstallments() {
     const remaining = remainingAfterDown - paid * monthly;
     const newC = {
       id: 'h' + Date.now(),
+      createdAt: new Date().toISOString(),
       name: form.name,
       phone: form.phone,
       desc: form.desc,
@@ -89,21 +92,21 @@ export function useHeavyInstallments() {
     if (error) showToast('⚠️ فشل الحفظ');
   };
 
-  const logPayment = async (id, amount) => {
+  const logPayment = async (id, amount, paymentDate) => {
     const c = heavyInstallments.find((x) => x.id === id);
     if (!c) return;
     const payAmount = amount !== undefined && amount !== null ? Number(amount) : Number(c.monthly);
     const newPaid = Number(c.paid) + 1;
     const newRemaining = Math.max(0, Number(c.remaining) - payAmount);
-    const today = new Date().toISOString().slice(0, 10);
-    const newPaymentDates = [...(c.paymentDates || []), today];
+    const selectedDate = paymentDate || new Date().toISOString().slice(0, 10);
+    const newPaymentDates = [...(c.paymentDates || []), selectedDate];
     const newPaymentAmounts = [...(c.paymentAmounts || []), payAmount];
     const { error } = await updateItem(
       id,
       {
         paid: newPaid,
         remaining: newRemaining,
-        lastPaymentDate: today,
+        lastPaymentDate: selectedDate,
         lastPaymentAmount: payAmount,
         paymentDates: newPaymentDates,
         paymentAmounts: newPaymentAmounts,
@@ -111,7 +114,7 @@ export function useHeavyInstallments() {
       {
         paid: newPaid,
         remaining: newRemaining,
-        last_payment_date: today,
+        last_payment_date: selectedDate,
         last_payment_amount: payAmount,
         payment_dates: newPaymentDates,
         payment_amounts: newPaymentAmounts,
@@ -188,6 +191,19 @@ export function useHeavyInstallments() {
     if (error) showToast('⚠️ فشل الحفظ');
   };
 
+  const updateDescription = async (id, description) => {
+    const { error } = await updateItem(
+      id,
+      { desc: description },
+      { description: description || null },
+    );
+    if (error) {
+      showToast('⚠️ فشل تعديل الوصف');
+      return;
+    }
+    showToast('✅ اتعدل وصف المنتج');
+  };
+
   const deleteHeavyInstallment = async (id) => {
     if (!window.confirm('متأكد إنك عايز تمسح العميل ده؟')) return;
     const { error } = await removeItem(id);
@@ -204,6 +220,7 @@ export function useHeavyInstallments() {
     undoPayment,
     editInstallmentsCount,
     setFirstInstallmentDate,
+    updateDescription,
     deleteHeavyInstallment,
   };
 }

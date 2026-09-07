@@ -35,6 +35,7 @@ import HeavyInstallmentList from "./components/heavyInstallments/HeavyInstallmen
 import HeavyInstallmentForm from "./components/heavyInstallments/HeavyInstallmentForm.jsx";
 import HeavyInstallmentDateForm from "./components/heavyInstallments/HeavyInstallmentDateForm.jsx";
 import PaymentAmountForm from "./components/installments/PaymentAmountForm.jsx";
+import EditInstallmentDescriptionForm from "./components/installments/EditInstallmentDescriptionForm.jsx";
 import { useTires } from "./hooks/useTires.js";
 import { useBatteries } from "./hooks/useBatteries.js";
 import { useInstallments } from "./hooks/useInstallments.js";
@@ -143,7 +144,7 @@ export default function App() {
       />
       <Tabs activeTab={activeTab} onChange={setActiveTab} />
 
-      <main>
+      <main className={activeTab === "installments" || activeTab === "heavyInstallments" ? "installments-main" : ""}>
         {isLoading ? (
           <div className="empty">جاري التحميل...</div>
         ) : (
@@ -249,6 +250,9 @@ export default function App() {
                 onOpenEditCount={(id) =>
                   setModal({ type: "editCountForm", payload: { id, kind: "installments" } })
                 }
+                onOpenEditDescription={(id) =>
+                  setModal({ type: "editDescriptionForm", payload: { id, kind: "installments" } })
+                }
                 onOpenAdd={() => setModal({ type: "installmentForm" })}
                 onDelete={installmentsApi.deleteInstallment}
                 kind="light"
@@ -267,6 +271,9 @@ export default function App() {
                 }
                 onOpenEditCount={(id) =>
                   setModal({ type: "editCountForm", payload: { id, kind: "heavy" } })
+                }
+                onOpenEditDescription={(id) =>
+                  setModal({ type: "editDescriptionForm", payload: { id, kind: "heavy" } })
                 }
                 onOpenAdd={() => setModal({ type: "heavyInstallmentForm" })}
                 onDelete={heavyInstallmentsApi.deleteHeavyInstallment}
@@ -396,6 +403,20 @@ export default function App() {
             onClose={closeModal}
           />
         )}
+        {modal?.type === "editDescriptionForm" && (
+          <EditInstallmentDescriptionForm
+            installment={
+              modal.payload.kind === "heavy"
+                ? heavyInstallmentsApi.heavyInstallments.find((c) => c.id === modal.payload.id)
+                : installmentsApi.installments.find((c) => c.id === modal.payload.id)
+            }
+            onSave={(description) => {
+              const api = modal.payload.kind === "heavy" ? heavyInstallmentsApi : installmentsApi;
+              api.updateDescription(modal.payload.id, description);
+            }}
+            onClose={closeModal}
+          />
+        )}
         {modal?.type === "paymentForm" && (
           <PaymentAmountForm
             customer={
@@ -403,10 +424,10 @@ export default function App() {
                 ? heavyInstallmentsApi.heavyInstallments.find((c) => c.id === modal.payload.id)
                 : installmentsApi.installments.find((c) => c.id === modal.payload.id)
             }
-            onSave={(amount) =>
+            onSave={(amount, paymentDate) =>
               modal.payload.kind === "heavy"
-                ? heavyInstallmentsApi.logPayment(modal.payload.id, amount)
-                : installmentsApi.logPayment(modal.payload.id, amount)
+                ? heavyInstallmentsApi.logPayment(modal.payload.id, amount, paymentDate)
+                : installmentsApi.logPayment(modal.payload.id, amount, paymentDate)
             }
             onClose={closeModal}
           />
