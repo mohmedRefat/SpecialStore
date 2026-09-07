@@ -19,6 +19,8 @@ export default function InstallmentsPage({
   onOpenPaymentForm,
   onUndoPayment,
   onOpenDateForm,
+  onOpenEditCount,
+  onOpenEditDescription,
   onDelete,
   kind, // 'light' (نص نقل) أو 'heavy' (نقل تقيل) — يحدد اتجاه زرار النقل
   onTransfer, // (customer) => Promise<boolean>
@@ -79,6 +81,11 @@ export default function InstallmentsPage({
             {selected.phone && (
               <div className="inst-phone">{selected.phone}</div>
             )}
+            {selected.createdAt && (
+              <div className="inst-phone">
+                مسجل في النظام: {new Date(selected.createdAt).toLocaleString('ar-EG')}
+              </div>
+            )}
           </div>
           <span className={`pill ${computeListStatus(selected).cls}`}>
             {computeListStatus(selected).label}
@@ -86,7 +93,17 @@ export default function InstallmentsPage({
         </div>
 
         <div className="inst-product-box">
-          <div className="inst-product-label">المنتج</div>
+          <div className="inst-product-heading">
+            <div className="inst-product-label">المنتج</div>
+            {onOpenEditDescription && (
+              <button
+                className="mini-btn inst-description-edit"
+                onClick={() => onOpenEditDescription(selected.id)}
+              >
+                ✏️ تعديل الوصف
+              </button>
+            )}
+          </div>
           {descLines.length > 0 ? (
             descLines.map((line, i) => (
               <div key={i} className="inst-product-line">
@@ -160,6 +177,14 @@ export default function InstallmentsPage({
           >
             📅 تاريخ البداية
           </button>
+          {onOpenEditCount && (
+            <button
+              className="btn ghost"
+              onClick={() => onOpenEditCount(selected.id)}
+            >
+              ✏️ عدد الأقساط
+            </button>
+          )}
           {onTransfer && (
             <button className="btn ghost" onClick={handleTransfer}>
               🔁 نقل لـ{targetLabel}
@@ -176,7 +201,9 @@ export default function InstallmentsPage({
                 <tr>
                   <th>#</th>
                   <th>التاريخ</th>
+                  <th>رقم القسط</th>
                   <th>يوم الفعلي للدفع</th>
+                  <th>مبلغ السداد</th>
                   <th>الحالة</th>
                   <th>السداد</th>
                 </tr>
@@ -191,8 +218,14 @@ export default function InstallmentsPage({
                     <td className="ledger-date">
                       {formatFullDate(row.dueDate)}
                     </td>
+                    <td className="num">{row.index} / {selected.installments}</td>
                     <td className="ledger-date">
                       {row.actualDate ? formatFullDate(row.actualDate) : "—"}
+                    </td>
+                    <td className="num">
+                      {row.settled && selected.paymentAmounts?.[row.index - 1]
+                        ? fmt(selected.paymentAmounts[row.index - 1])
+                        : "—"}
                     </td>
                     <td>
                       {row.status === "مسدد" ? (

@@ -5,6 +5,7 @@ import { useToast } from "../context/ToastContext.jsx";
 function mapFromDb(r) {
   return {
     id: r.id,
+    createdAt: r.created_at || '',
     name: r.name,
     phone: r.phone,
     desc: r.description,
@@ -27,6 +28,7 @@ function mapFromDb(r) {
 function mapToDb(c) {
   return {
     id: c.id,
+    created_at: c.createdAt || undefined,
     name: c.name,
     phone: c.phone,
     description: c.desc,
@@ -71,6 +73,7 @@ export function useInstallments() {
     const remaining = remainingAfterDown - paid * monthly;
     const newC = {
       id: "c" + Date.now(),
+      createdAt: new Date().toISOString(),
       name: form.name,
       phone: form.phone,
       desc: form.desc,
@@ -95,7 +98,7 @@ export function useInstallments() {
   // amount: المبلغ الفعلي اللي دفعه دلوقتي — ممكن يكون مختلف عن "القسط" المحسوب.
   // بنسجّل المبلغ ده في مصفوفة منفصلة عشان "تراجع" يعرف يرجع بالظبط بالمبلغ الصح
   // حتى لو اتكرر أكتر من مرة ورا بعض على دفعات مختلفة القيمة
-  const logPayment = async (id, amount) => {
+  const logPayment = async (id, amount, paymentDate) => {
     const c = installments.find((x) => x.id === id);
     if (!c) return;
     const payAmount =
@@ -104,15 +107,15 @@ export function useInstallments() {
         : Number(c.monthly);
     const newPaid = Number(c.paid) + 1;
     const newRemaining = Math.max(0, Number(c.remaining) - payAmount);
-    const today = new Date().toISOString().slice(0, 10);
-    const newPaymentDates = [...(c.paymentDates || []), today];
+    const selectedDate = paymentDate || new Date().toISOString().slice(0, 10);
+    const newPaymentDates = [...(c.paymentDates || []), selectedDate];
     const newPaymentAmounts = [...(c.paymentAmounts || []), payAmount];
     const { error } = await updateItem(
       id,
       {
         paid: newPaid,
         remaining: newRemaining,
-        lastPaymentDate: today,
+        lastPaymentDate: selectedDate,
         lastPaymentAmount: payAmount,
         paymentDates: newPaymentDates,
         paymentAmounts: newPaymentAmounts,
@@ -120,7 +123,7 @@ export function useInstallments() {
       {
         paid: newPaid,
         remaining: newRemaining,
-        last_payment_date: today,
+        last_payment_date: selectedDate,
         last_payment_amount: payAmount,
         payment_dates: newPaymentDates,
         payment_amounts: newPaymentAmounts,
@@ -201,6 +204,19 @@ export function useInstallments() {
     if (error) showToast("⚠️ فشل الحفظ");
   };
 
+  const updateDescription = async (id, description) => {
+    const { error } = await updateItem(
+      id,
+      { desc: description },
+      { description: description || null },
+    );
+    if (error) {
+      showToast("⚠️ فشل تعديل الوصف");
+      return;
+    }
+    showToast("✅ اتعدل وصف المنتج");
+  };
+
   const deleteInstallment = async (id) => {
     if (!window.confirm("متأكد إنك عايز تمسح العميل ده؟")) return;
     const { error } = await removeItem(id);
@@ -217,6 +233,7 @@ export function useInstallments() {
     undoPayment,
     editInstallmentsCount,
     setFirstInstallmentDate,
+    updateDescription,
     deleteInstallment,
   };
 }

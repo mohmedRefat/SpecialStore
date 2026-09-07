@@ -39,21 +39,43 @@ create table if not exists public.installments (
   remaining numeric,
   first_installment_date date,
   last_payment_date date,
+  last_payment_amount numeric,
+  frequency text default 'monthly',
+  received_date date,
+  payment_dates jsonb default '[]'::jsonb,
+  payment_amounts jsonb default '[]'::jsonb,
   created_at timestamptz default now()
 );
+
+create table if not exists public.heavy_installments (like public.installments including all);
+
+-- ترقية آمنة للجداول الموجودة مسبقاً قبل استخدام سجل الدفعات
+alter table public.installments add column if not exists last_payment_amount numeric;
+alter table public.installments add column if not exists frequency text default 'monthly';
+alter table public.installments add column if not exists received_date date;
+alter table public.installments add column if not exists payment_dates jsonb default '[]'::jsonb;
+alter table public.installments add column if not exists payment_amounts jsonb default '[]'::jsonb;
+alter table public.heavy_installments add column if not exists last_payment_amount numeric;
+alter table public.heavy_installments add column if not exists frequency text default 'monthly';
+alter table public.heavy_installments add column if not exists received_date date;
+alter table public.heavy_installments add column if not exists payment_dates jsonb default '[]'::jsonb;
+alter table public.heavy_installments add column if not exists payment_amounts jsonb default '[]'::jsonb;
 
 -- تفعيل Row Level Security
 alter table public.tires enable row level security;
 alter table public.batteries enable row level security;
 alter table public.installments enable row level security;
+alter table public.heavy_installments enable row level security;
 
 -- ملاحظة: السياسات دي تسمح لأي حد معاه الـ anon key يقرأ/يكتب.
 -- كفاية للاستخدام الشخصي/المحل بس مش production آمن لتطبيق عام.
 create policy "allow all tires" on public.tires for all using (true) with check (true);
 create policy "allow all batteries" on public.batteries for all using (true) with check (true);
 create policy "allow all installments" on public.installments for all using (true) with check (true);
+create policy "allow all heavy installments" on public.heavy_installments for all using (true) with check (true);
 
 -- تفعيل الـ Realtime على الجداول
 alter publication supabase_realtime add table public.tires;
 alter publication supabase_realtime add table public.batteries;
 alter publication supabase_realtime add table public.installments;
+alter publication supabase_realtime add table public.heavy_installments;
