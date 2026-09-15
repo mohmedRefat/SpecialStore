@@ -1,14 +1,14 @@
 import { useState } from 'react';
 
-export default function LoaderForm({ onSave, onClose }) {
-  const [form, setForm] = useState({
+export default function LoaderForm({ onSave, onClose, item }) {
+  const [form, setForm] = useState(item || {
     brand: '', origin: '', size: '', qty: 0, threshold: 1, cost: '', wholesale: '', retail: '', place: '',
   });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   return (
     <>
-      <h3>➕ إضافة صنف لودر/زراعي</h3>
+      <h3>{item ? '✏️ تعديل صنف لودر/زراعي' : '➕ إضافة صنف لودر/زراعي'}</h3>
       <div className="field"><label>الصنف</label><input value={form.brand} onChange={set('brand')} /></div>
       <div className="field-row">
         <div className="field"><label>المنشأ</label><input value={form.origin} onChange={set('origin')} /></div>

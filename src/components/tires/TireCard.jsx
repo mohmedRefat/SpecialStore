@@ -1,6 +1,6 @@
 import { fmt, stockStatus } from '../../utils/helpers.js';
 
-export default function TireCard({ tire, onAdjust, onDelete }) {
+export default function TireCard({ tire, onAdjust, onDelete, onEdit }) {
   const st = stockStatus(tire.qty, tire.threshold);
   return (
     <div className="item-card">
@@ -34,6 +34,7 @@ export default function TireCard({ tire, onAdjust, onDelete }) {
       <div className="item-actions">
         <button className="mini-btn" onClick={() => onAdjust(tire.id, 1)}>➕ زوّد قطعة</button>
         <button className="mini-btn" onClick={() => onAdjust(tire.id, -1)}>➖ نقّص قطعة</button>
+        <button className="mini-btn" onClick={() => onEdit(tire)}>✏️ تعديل</button>
         <button className="mini-btn" onClick={() => onDelete(tire.id)}>🗑️ حذف</button>
       </div>
     </div>

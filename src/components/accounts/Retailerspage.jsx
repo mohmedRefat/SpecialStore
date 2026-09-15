@@ -42,8 +42,7 @@ export default function RetailersPage({
         const paid = paidFor(a.id);
         return { ...a, total, paid, balance: total - paid };
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [accounts, receipts]
+    [accounts, receipts, itemsFor]
   );
 
   const filtered = accountsWithTotals.filter((a) => fuzzyMatch(query, a.name));

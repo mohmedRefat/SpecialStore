@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import { fmt, fuzzyMatch, stockStatus } from '../../utils/helpers.js';
 import '../../styles/ledger.css';
 
-export default function LoaderList({ loaders, onAdjust, onDelete, onOpenAdd }) {
+export default function LoaderList({ loaders, onAdjust, onDelete, onEdit, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const low = loaders.filter((l) => l.qty <= l.threshold).length;
   const totalQty = loaders.reduce((s, l) => s + (l.qty || 0), 0);
@@ -61,6 +61,7 @@ export default function LoaderList({ loaders, onAdjust, onDelete, onOpenAdd }) {
                       <div className="ledger-actions">
                         <button className="qty-btn" title="زوّد قطعة" onClick={() => onAdjust(l.id, 1)}>➕</button>
                         <button className="qty-btn" title="نقّص قطعة" onClick={() => onAdjust(l.id, -1)}>➖</button>
+                        <button className="qty-btn" title="تعديل" onClick={() => onEdit(l)}>✏️</button>
                         <button className="qty-btn danger" title="حذف" onClick={() => onDelete(l.id)}>🗑️</button>
                       </div>
                     </td>

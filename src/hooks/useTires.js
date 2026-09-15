@@ -39,11 +39,27 @@ export function useTires() {
     if (error) showToast('⚠️ فشل التحديث');
   };
 
+  const updateTire = async (id, form) => {
+    const patch = {
+      brand: form.brand,
+      origin: form.origin,
+      size: form.size,
+      qty: Number(form.qty) || 0,
+      threshold: Number(form.threshold) || 0,
+      cost: form.cost ? Number(form.cost) : null,
+      wholesale: form.wholesale ? Number(form.wholesale) : null,
+      retail: form.retail ? Number(form.retail) : null,
+    };
+    const { error } = await updateItem(id, patch);
+    if (error) showToast('⚠️ فشل التعديل');
+    else showToast('✅ اتعدّل المنتج');
+  };
+
   const deleteTire = async (id) => {
     if (!window.confirm('متأكد إنك عايز تمسح الصنف ده؟')) return;
     const { error } = await removeItem(id);
     if (error) showToast('⚠️ فشل الحذف');
   };
 
-  return { tires, setTires, loading, cloudMode, addTire, adjustQty, deleteTire };
+  return { tires, setTires, loading, cloudMode, addTire, updateTire, adjustQty, deleteTire };
 }

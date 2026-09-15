@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useSupabaseTable } from './useSupabaseTable.js';
 import { useToast } from '../context/ToastContext.jsx';
 
@@ -85,7 +86,10 @@ export function useRetailers() {
     if (error) showToast('⚠️ فشل الحذف');
   };
 
-  const itemsFor = (accountId) => accountItems.filter((i) => i.accountId === accountId);
+  const itemsFor = useCallback(
+    (accountId) => accountItems.filter((i) => i.accountId === accountId),
+    [accountItems]
+  );
 
   return {
     accounts,

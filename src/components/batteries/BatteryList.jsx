@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import BatteryCard from './BatteryCard.jsx';
 import { fuzzyMatch } from '../../utils/helpers.js';
 
-export default function BatteryList({ batteries, onAdjust, onDelete, onOpenAdd }) {
+export default function BatteryList({ batteries, onAdjust, onDelete, onEdit, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const low = batteries.filter((b) => b.qty <= 1).length;
   const totalQty = batteries.reduce((s, b) => s + (b.qty || 0), 0);
@@ -33,7 +33,7 @@ export default function BatteryList({ batteries, onAdjust, onDelete, onOpenAdd }
       ) : (
         <div>
           {filtered.map((b) => (
-            <BatteryCard key={b.id} battery={b} onAdjust={onAdjust} onDelete={onDelete} />
+            <BatteryCard key={b.id} battery={b} onAdjust={onAdjust} onDelete={onDelete} onEdit={onEdit} />
           ))}
         </div>
       )}
