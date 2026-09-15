@@ -35,11 +35,24 @@ export function useHardware() {
     if (error) showToast('⚠️ فشل التحديث');
   };
 
+  const updateHardware = async (id, form) => {
+    const patch = {
+      name: form.name,
+      qty: Number(form.qty) || 0,
+      cost: form.cost ? Number(form.cost) : null,
+      wholesale: form.wholesale ? Number(form.wholesale) : null,
+      retail: form.retail ? Number(form.retail) : null,
+    };
+    const { error } = await updateItem(id, patch);
+    if (error) showToast('⚠️ فشل التعديل');
+    else showToast('✅ اتعدّل المنتج');
+  };
+
   const deleteHardware = async (id) => {
     if (!window.confirm('متأكد إنك عايز تمسح الصنف ده؟')) return;
     const { error } = await removeItem(id);
     if (error) showToast('⚠️ فشل الحذف');
   };
 
-  return { hardware, setHardware, loading, cloudMode, addHardware, adjustQty, deleteHardware };
+  return { hardware, setHardware, loading, cloudMode, addHardware, updateHardware, adjustQty, deleteHardware };
 }

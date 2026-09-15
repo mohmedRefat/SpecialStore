@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import { fmt, fuzzyMatch, stockStatus } from '../../utils/helpers.js';
 import '../../styles/ledger.css';
 
-export default function HardwareList({ hardware, onAdjust, onDelete, onOpenAdd }) {
+export default function HardwareList({ hardware, onAdjust, onDelete, onEdit, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const outOfStock = hardware.filter((h) => h.qty <= 0).length;
   const totalQty = hardware.reduce((s, h) => s + (h.qty || 0), 0);
@@ -57,6 +57,7 @@ export default function HardwareList({ hardware, onAdjust, onDelete, onOpenAdd }
                       <div className="ledger-actions">
                         <button className="qty-btn" title="زوّد قطعة" onClick={() => onAdjust(h.id, 1)}>➕</button>
                         <button className="qty-btn" title="نقّص قطعة" onClick={() => onAdjust(h.id, -1)}>➖</button>
+                        <button className="qty-btn" title="تعديل" onClick={() => onEdit(h)}>✏️</button>
                         <button className="qty-btn danger" title="حذف" onClick={() => onDelete(h.id)}>🗑️</button>
                       </div>
                     </td>

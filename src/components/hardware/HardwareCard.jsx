@@ -1,6 +1,6 @@
 import { fmt, stockStatus } from '../../utils/helpers.js';
 
-export default function HardwareCard({ item, onAdjust, onDelete }) {
+export default function HardwareCard({ item, onAdjust, onDelete, onEdit }) {
   const st = stockStatus(item.qty, 0);
   return (
     <div className="item-card">
@@ -28,6 +28,7 @@ export default function HardwareCard({ item, onAdjust, onDelete }) {
       <div className="item-actions">
         <button className="mini-btn" onClick={() => onAdjust(item.id, 1)}>➕ زوّد قطعة</button>
         <button className="mini-btn" onClick={() => onAdjust(item.id, -1)}>➖ نقّص قطعة</button>
+        <button className="mini-btn" onClick={() => onEdit(item)}>✏️ تعديل</button>
         <button className="mini-btn" onClick={() => onDelete(item.id)}>🗑️ حذف</button>
       </div>
     </div>

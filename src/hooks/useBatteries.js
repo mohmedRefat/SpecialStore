@@ -37,11 +37,26 @@ export function useBatteries() {
     if (error) showToast('⚠️ فشل التحديث');
   };
 
+  const updateBattery = async (id, form) => {
+    const patch = {
+      brand: form.brand,
+      origin: form.origin,
+      amp: Number(form.amp) || 0,
+      qty: Number(form.qty) || 0,
+      cost: form.cost ? Number(form.cost) : null,
+      wholesale: form.wholesale ? Number(form.wholesale) : null,
+      retail: form.retail ? Number(form.retail) : null,
+    };
+    const { error } = await updateItem(id, patch);
+    if (error) showToast('⚠️ فشل التعديل');
+    else showToast('✅ اتعدّل المنتج');
+  };
+
   const deleteBattery = async (id) => {
     if (!window.confirm('متأكد إنك عايز تمسح الصنف ده؟')) return;
     const { error } = await removeItem(id);
     if (error) showToast('⚠️ فشل الحذف');
   };
 
-  return { batteries, setBatteries, loading, cloudMode, addBattery, adjustQty, deleteBattery };
+  return { batteries, setBatteries, loading, cloudMode, addBattery, updateBattery, adjustQty, deleteBattery };
 }

@@ -4,7 +4,7 @@ import SearchBar from '../layout/SearchBar.jsx';
 import TireCard from './TireCard.jsx';
 import { fuzzyMatch } from '../../utils/helpers.js';
 
-export default function TireList({ tires, onAdjust, onDelete, onOpenAdd }) {
+export default function TireList({ tires, onAdjust, onDelete, onEdit, onOpenAdd }) {
   const [query, setQuery] = useState('');
   const low = tires.filter((t) => t.qty <= t.threshold).length;
   const totalQty = tires.reduce((s, t) => s + (t.qty || 0), 0);
@@ -31,7 +31,7 @@ export default function TireList({ tires, onAdjust, onDelete, onOpenAdd }) {
       ) : (
         <div>
           {filtered.map((t) => (
-            <TireCard key={t.id} tire={t} onAdjust={onAdjust} onDelete={onDelete} />
+            <TireCard key={t.id} tire={t} onAdjust={onAdjust} onDelete={onDelete} onEdit={onEdit} />
           ))}
         </div>
       )}

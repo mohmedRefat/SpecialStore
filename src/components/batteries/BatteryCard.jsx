@@ -1,6 +1,6 @@
 import { fmt, stockStatus } from '../../utils/helpers.js';
 
-export default function BatteryCard({ battery, onAdjust, onDelete }) {
+export default function BatteryCard({ battery, onAdjust, onDelete, onEdit }) {
   const st = stockStatus(battery.qty, 1);
   return (
     <div className="item-card">
@@ -31,6 +31,7 @@ export default function BatteryCard({ battery, onAdjust, onDelete }) {
       <div className="item-actions">
         <button className="mini-btn" onClick={() => onAdjust(battery.id, 1)}>➕ زوّد قطعة</button>
         <button className="mini-btn" onClick={() => onAdjust(battery.id, -1)}>➖ نقّص قطعة</button>
+        <button className="mini-btn" onClick={() => onEdit(battery)}>✏️ تعديل</button>
         <button className="mini-btn" onClick={() => onDelete(battery.id)}>🗑️ حذف</button>
       </div>
     </div>

@@ -1,20 +1,14 @@
 import { useState } from 'react';
 
-export default function BatteryForm({ onSave, onClose }) {
-  const [form, setForm] = useState({
-    brand: '',
-    origin: '',
-    amp: '',
-    qty: 0,
-    cost: '',
-    wholesale: '',
-    retail: '',
+export default function BatteryForm({ onSave, onClose, item }) {
+  const [form, setForm] = useState(item || {
+    brand: '', origin: '', amp: '', qty: 0, cost: '', wholesale: '', retail: '',
   });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   return (
     <>
-      <h3>➕ إضافة بطارية</h3>
+      <h3>{item ? '✏️ تعديل بطارية' : '➕ إضافة بطارية'}</h3>
       <div className="field">
         <label>الماركة</label>
         <input value={form.brand} onChange={set('brand')} />

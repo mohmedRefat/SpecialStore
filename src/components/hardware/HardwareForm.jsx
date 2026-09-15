@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-export default function HardwareForm({ onSave, onClose }) {
-  const [form, setForm] = useState({ name: '', qty: 0, cost: '', wholesale: '', retail: '' });
+export default function HardwareForm({ onSave, onClose, item }) {
+  const [form, setForm] = useState(item || { name: '', qty: 0, cost: '', wholesale: '', retail: '' });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   return (
     <>
-      <h3>➕ إضافة صنف حديد</h3>
+      <h3>{item ? '✏️ تعديل صنف حديد' : '➕ إضافة صنف حديد'}</h3>
       <div className="field">
         <label>الصنف</label>
         <input value={form.name} onChange={set('name')} />

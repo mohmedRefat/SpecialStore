@@ -1,21 +1,14 @@
 import { useState } from 'react';
 
-export default function TireForm({ onSave, onClose }) {
-  const [form, setForm] = useState({
-    brand: '',
-    origin: '',
-    size: '',
-    qty: 0,
-    threshold: 2,
-    cost: '',
-    wholesale: '',
-    retail: '',
+export default function TireForm({ onSave, onClose, item }) {
+  const [form, setForm] = useState(item || {
+    brand: '', origin: '', size: '', qty: 0, threshold: 2, cost: '', wholesale: '', retail: '',
   });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   return (
     <>
-      <h3>➕ إضافة صنف كاوتش</h3>
+      <h3>{item ? '✏️ تعديل صنف كاوتش' : '➕ إضافة صنف كاوتش'}</h3>
       <div className="field">
         <label>الماركة</label>
         <input value={form.brand} onChange={set('brand')} />

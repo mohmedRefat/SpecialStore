@@ -154,6 +154,7 @@ export default function App() {
                 tires={tiresApi.tires}
                 onAdjust={tiresApi.adjustQty}
                 onDelete={tiresApi.deleteTire}
+                onEdit={(item) => setModal({ type: "tireEditForm", payload: item })}
                 onOpenAdd={() => setModal({ type: "tireForm" })}
               />
             )}
@@ -162,6 +163,7 @@ export default function App() {
                 batteries={batteriesApi.batteries}
                 onAdjust={batteriesApi.adjustQty}
                 onDelete={batteriesApi.deleteBattery}
+                onEdit={(item) => setModal({ type: "batteryEditForm", payload: item })}
                 onOpenAdd={() => setModal({ type: "batteryForm" })}
               />
             )}
@@ -170,6 +172,7 @@ export default function App() {
                 hardware={hardwareApi.hardware}
                 onAdjust={hardwareApi.adjustQty}
                 onDelete={hardwareApi.deleteHardware}
+                onEdit={(item) => setModal({ type: "hardwareEditForm", payload: item })}
                 onOpenAdd={() => setModal({ type: "hardwareForm" })}
               />
             )}
@@ -178,6 +181,7 @@ export default function App() {
                 loaders={loadersApi.loaders}
                 onAdjust={loadersApi.adjustQty}
                 onDelete={loadersApi.deleteLoader}
+                onEdit={(item) => setModal({ type: "loaderEditForm", payload: item })}
                 onOpenAdd={() => setModal({ type: "loaderForm" })}
               />
             )}
@@ -289,14 +293,26 @@ export default function App() {
         {modal?.type === "tireForm" && (
           <TireForm onSave={tiresApi.addTire} onClose={closeModal} />
         )}
+        {modal?.type === "tireEditForm" && (
+          <TireForm item={modal.payload} onSave={(form) => tiresApi.updateTire(modal.payload.id, form)} onClose={closeModal} />
+        )}
         {modal?.type === "batteryForm" && (
           <BatteryForm onSave={batteriesApi.addBattery} onClose={closeModal} />
+        )}
+        {modal?.type === "batteryEditForm" && (
+          <BatteryForm item={modal.payload} onSave={(form) => batteriesApi.updateBattery(modal.payload.id, form)} onClose={closeModal} />
         )}
         {modal?.type === "hardwareForm" && (
           <HardwareForm onSave={hardwareApi.addHardware} onClose={closeModal} />
         )}
+        {modal?.type === "hardwareEditForm" && (
+          <HardwareForm item={modal.payload} onSave={(form) => hardwareApi.updateHardware(modal.payload.id, form)} onClose={closeModal} />
+        )}
         {modal?.type === "loaderForm" && (
           <LoaderForm onSave={loadersApi.addLoader} onClose={closeModal} />
+        )}
+        {modal?.type === "loaderEditForm" && (
+          <LoaderForm item={modal.payload} onSave={(form) => loadersApi.updateLoader(modal.payload.id, form)} onClose={closeModal} />
         )}
         {modal?.type === "salesForm" && (
           <SalesForm
