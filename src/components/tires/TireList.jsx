@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import StatStrip from '../layout/StatStrip.jsx';
 import SearchBar from '../layout/SearchBar.jsx';
-import TireCard from './TireCard.jsx';
+import StockTable from '../layout/StockTable.jsx';
 import { fuzzyMatch } from '../../utils/helpers.js';
 
 export default function TireList({ tires, onAdjust, onDelete, onEdit, onOpenAdd }) {
@@ -29,11 +29,14 @@ export default function TireList({ tires, onAdjust, onDelete, onEdit, onOpenAdd 
       {filtered.length === 0 ? (
         <div className="empty">مفيش نتايج مطابقة</div>
       ) : (
-        <div>
-          {filtered.map((t) => (
-            <TireCard key={t.id} tire={t} onAdjust={onAdjust} onDelete={onDelete} onEdit={onEdit} />
-          ))}
-        </div>
+        <StockTable
+          items={filtered}
+          groupLabel="المقاس"
+          getGroup={(tire) => tire.size}
+          onAdjust={onAdjust}
+          onDelete={onDelete}
+          onEdit={onEdit}
+        />
       )}
     </>
   );

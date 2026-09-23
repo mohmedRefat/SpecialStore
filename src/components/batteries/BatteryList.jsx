@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import StatStrip from '../layout/StatStrip.jsx';
 import SearchBar from '../layout/SearchBar.jsx';
-import BatteryCard from './BatteryCard.jsx';
+import StockTable from '../layout/StockTable.jsx';
 import { fuzzyMatch } from '../../utils/helpers.js';
 
 export default function BatteryList({ batteries, onAdjust, onDelete, onEdit, onOpenAdd }) {
@@ -31,11 +31,15 @@ export default function BatteryList({ batteries, onAdjust, onDelete, onEdit, onO
       {filtered.length === 0 ? (
         <div className="empty">مفيش نتايج مطابقة</div>
       ) : (
-        <div>
-          {filtered.map((b) => (
-            <BatteryCard key={b.id} battery={b} onAdjust={onAdjust} onDelete={onDelete} onEdit={onEdit} />
-          ))}
-        </div>
+        <StockTable
+          items={filtered}
+          groupLabel="الأمبير"
+          getGroup={(battery) => battery.amp}
+          isBattery
+          onAdjust={onAdjust}
+          onDelete={onDelete}
+          onEdit={onEdit}
+        />
       )}
     </>
   );
