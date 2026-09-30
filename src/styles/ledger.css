@@ -46,28 +46,30 @@
 }
 
 .ledger-detail-wrap{
-  width:calc(100% + 24px);
-  margin-inline:-12px;
-  overflow-x:hidden;
+  width:100%;
+  margin:0;
+  overflow-x:auto;
 }
 .ledger-detail-table{
-  min-width:0;
+  min-width:720px;
   table-layout:fixed;
 }
 .ledger-detail-table th:nth-child(1),
 .ledger-detail-table td:nth-child(1){ width:13%; }
 .ledger-detail-table th:nth-child(2),
-.ledger-detail-table td:nth-child(2){ width:9%; }
+.ledger-detail-table td:nth-child(2){ width:10%; }
 .ledger-detail-table th:nth-child(3),
-.ledger-detail-table td:nth-child(3){ width:38%; }
+.ledger-detail-table td:nth-child(3){ width:12%; }
 .ledger-detail-table th:nth-child(4),
-.ledger-detail-table td:nth-child(4),
+.ledger-detail-table td:nth-child(4){ width:24%; }
 .ledger-detail-table th:nth-child(5),
-.ledger-detail-table td:nth-child(5){ width:11%; }
+.ledger-detail-table td:nth-child(5){ width:12%; }
 .ledger-detail-table th:nth-child(6),
-.ledger-detail-table td:nth-child(6){ width:12%; }
+.ledger-detail-table td:nth-child(6){ width:10%; }
 .ledger-detail-table th:nth-child(7),
-.ledger-detail-table td:nth-child(7){ width:6%; }
+.ledger-detail-table td:nth-child(7){ width:13%; }
+.ledger-detail-table th:nth-child(8),
+.ledger-detail-table td:nth-child(8){ width:6%; }
 
 .ledger-table thead th{
   position:sticky;
@@ -247,11 +249,6 @@
 
 /* موبايل: خط وحشو أصغر شوية عشان الجدول ياخد مساحة أقل، بس لسه واضح */
 @media(max-width:480px){
-  .ledger-detail-wrap{
-    width:calc(100% + 12px);
-    margin-inline:-6px;
-  }
-
   .ledger-table thead th{ font-size:12.5px; padding:11px 9px; }
   .ledger-table tbody td{ font-size:14px; padding:11px 9px; }
 
@@ -286,6 +283,7 @@
     height:24px;
     padding:0 5px;
   }
+  .ledger-detail-table .ledger-quantity{ min-width:0; }
 }
 
 /* أزرار الإجراءات جوه خلية الجدول (زوّد/نقّص/حذف) */
