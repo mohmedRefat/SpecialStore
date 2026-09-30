@@ -104,6 +104,7 @@ export default function RetailersPage({
         type: 'item',
         date: i.itemDate,
         qty: Number(i.qty) || 0,
+        price: Number(i.price) || 0,
         product: i.product,
         meta: [i.sizeOrAmp, i.origin].filter(Boolean).join(' · '),
         charged: Number(i.total) || 0,
@@ -114,6 +115,7 @@ export default function RetailersPage({
         type: 'receipt',
         date: r.receivedAt,
         qty: null,
+        price: null,
         product: r.desc || 'دفعة',
         meta: '',
         charged: 0,
@@ -238,6 +240,7 @@ export default function RetailersPage({
                 <tr>
                   <th>التاريخ</th>
                   <th>الكمية</th>
+                  <th>سعر الوحدة</th>
                   <th>المنتج</th>
                   <th>إجمالي</th>
                   <th>واصل</th>
@@ -252,6 +255,7 @@ export default function RetailersPage({
                     <td className="num ledger-quantity">
                       {r.qty === null ? '—' : <span className="quantity-badge">{r.qty}</span>}
                     </td>
+                    <td className="num">{r.price > 0 ? fmt(r.price) : '—'}</td>
                     <td className="ledger-strong sticky-col">
                       <span className="ledger-entry-label">{r.type === 'item' ? 'شراء' : 'دفعة'}</span>
                       <span className="ledger-product">{r.product}</span>
@@ -275,7 +279,7 @@ export default function RetailersPage({
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={3} className="ledger-foot-label">الإجمالي</td>
+                  <td colSpan={4} className="ledger-foot-label">الإجمالي</td>
                   <td className="num ledger-total">{fmt(selected.total)}</td>
                   <td className="num ledger-total">{fmt(selected.paid)}</td>
                   <td className="num ledger-total" style={{ color: hasCredit ? 'var(--success)' : 'var(--danger)' }}>
