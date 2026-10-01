@@ -1,6 +1,8 @@
 /* ============ SHARED HELPERS ============ */
 export const fmt = (n) =>
-  n === null || n === undefined || n === '' ? '—' : Number(n).toLocaleString('ar-EG');
+  n === null || n === undefined || n === ''
+    ? '—'
+    : Number(n).toLocaleString('ar-EG').replace(/\u066c/g, '\u202f');
 
 export function norm(s) {
   return String(s || '').replace(/[\/\s\-،,]/g, '').toLowerCase();
