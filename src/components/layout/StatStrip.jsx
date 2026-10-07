@@ -1,6 +1,6 @@
-export default function StatStrip({ stats }) {
+export default function StatStrip({ stats, className = '' }) {
   return (
-    <div className="stat-strip">
+    <div className={`stat-strip ${className}`}>
       {stats.map((s, i) => (
         <div
           key={i}

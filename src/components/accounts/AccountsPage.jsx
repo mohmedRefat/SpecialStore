@@ -107,6 +107,7 @@ export default function AccountsPage({
         </button>
         <div className="section-title">{selected.name}</div>
         <StatStrip
+          className="account-money-stats"
           stats={[
             { value: fmt(selected.total), label: 'إجمالي المشتريات' },
             { value: fmt(selected.paid), label: 'المدفوع', variant: 'success' },
