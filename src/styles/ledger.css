@@ -246,11 +246,24 @@
   font-variant-numeric:tabular-nums;
   font-family:'Tajawal',sans-serif;
 }
+.ledger-table .num:not(.ledger-quantity){
+  font-size:18px;
+  font-weight:700;
+}
+.ledger-table .ledger-total:not(.ledger-quantity){
+  font-size:19px;
+}
+.account-money-stats .stat .v{
+  font-size:27px;
+}
 
 /* موبايل: خط وحشو أصغر شوية عشان الجدول ياخد مساحة أقل، بس لسه واضح */
 @media(max-width:480px){
   .ledger-table thead th{ font-size:12.5px; padding:11px 9px; }
   .ledger-table tbody td{ font-size:14px; padding:11px 9px; }
+  .ledger-table .num:not(.ledger-quantity){ font-size:16px; }
+  .ledger-table .ledger-total:not(.ledger-quantity){ font-size:17px; }
+  .account-money-stats .stat .v{ font-size:24px; }
 
   .ledger-detail-table thead th{
     font-size:11px;
